@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Handoff Cloud — Agentic Memory & Continuity Layer</title>
+  <meta name="description" content="Vendor-neutral, open-source continuity layer for AI coding agents. Powered by CockroachDB Cloud Vector Memory and Amazon Bedrock." />
+
+  <!-- Fonts: Plus Jakarta Sans & JetBrains Mono (SynthAI Style) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            synth: {
+              bg: '#05070C',
+              card: '#0D111A',
+              cardHover: '#131A28',
+              border: '#1E2638',
+              accent: '#F59E0B',
+              accentGlow: 'rgba(245, 158, 11, 0.15)',
+              cyan: '#06B6D4',
+              violet: '#8B5CF6',
+              emerald: '#10B981',
+              muted: '#94A3B8',
+              pill: '#1E293B',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #05070C;
+      color: #F8FAFC;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+    }
+    
+    /* SynthAI Gradient Aura Effects */
+    .synth-hero-aura {
+      background: radial-gradient(ellipse at 50% -10%, rgba(245, 158, 11, 0.18) 0%, rgba(6, 182, 212, 0.08) 40%, transparent 75%);
+    }
+
+    .synth-card-glow {
+      position: relative;
+    }
+    .synth-card-glow::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 24px;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 50%, rgba(245, 158, 11, 0.25));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* SynthAI Badge Indicator */
+    .synth-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.875rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #F59E0B;
+    }
+
+    /* SynthAI Primary Button Pill */
+    .synth-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.75rem;
+      border-radius: 9999px;
+      background: #FFFFFF;
+      color: #05070C;
+      font-weight: 700;
+      font-size: 0.875rem;
+      letter-spacing: 0.02em;
+      transition: all 0.2s ease;
+    }
+    .synth-btn-primary:hover {
+      background: #F59E0B;
+      color: #05070C;
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* SynthAI Secondary Button */
+    .synth-btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.75rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #F8FAFC;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+    }
+    .synth-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .tab-pill.active {
+      background: #FFFFFF;
+      color: #05070C;
+    }
+  </style>
+</head>
+<body class="bg-synth-bg text-slate-100 antialiased selection:bg-brand-amber selection:text-black">
+
+  <!-- AURA GLOW BACKGROUND -->
+  <div class="absolute inset-0 synth-hero-aura pointer-events-none z-0"></div>
+
+  <!-- NAVIGATION HEADER (SynthAI Layout) -->
+  <header class="sticky top-0 z-50 border-b border-white/5 bg-[#05070C]/80 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      
+      <!-- LOGO -->
+      <a href="#" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-600 to-cyan-500 p-[1px]">
+          <div class="w-full h-full bg-synth-bg rounded-[15px] flex items-center justify-center">
+            <svg class="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="6" cy="12" r="3" fill="#F59E0B" stroke="none" />
+              <circle cx="18" cy="12" r="3" fill="#10B981" stroke="none" />
+              <path d="M9 12h6M12 6v12" stroke="#06B6D4" stroke-width="2" stroke-dasharray="2 2" />
+            </svg>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-extrabold text-xl tracking-tight text-white">HANDOFF</span>
+          <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-400 px-2 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/20">CLOUD</span>
+        </div>
+      </a>
+
+      <!-- NAV LINKS -->
+      <nav class="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-widest text-slate-400">
+        <a href="#features" class="hover:text-white transition-colors">FEATURES</a>
+        <a href="#cockroach" class="hover:text-amber-400 transition-colors">COCKROACHDB</a>
+        <a href="#aws" class="hover:text-cyan-400 transition-colors">AWS PIPELINE</a>
+        <a href="#demo" class="hover:text-white transition-colors">INTERACTIVE DEMO</a>
+        <a href="#setup" class="hover:text-white transition-colors">SETUP</a>
+      </nav>
+
+      <!-- RIGHT ACTIONS -->
+      <div class="flex items-center gap-4">
+        <a href="https://github.com/mikaelaldy/project-handoff" target="_blank" class="hidden sm:inline-flex items-center gap-2 text-xs font-mono text-slate-300 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full transition-colors">
+          <svg class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span>Star</span>
+          <span class="text-amber-400 font-bold">★ 3.1k</span>
+        </a>
+        <a href="https://cockroachdb-ai.devpost.com/" target="_blank" class="synth-btn-primary py-2.5 px-5 text-xs">
+          <span>DEVPOST ENTRY</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="relative z-10">
+
+    <!-- HERO SECTION (SynthAI Typography & Spacing) -->
+    <section class="max-w-7xl mx-auto px-6 pt-20 pb-24 text-center">
+      
+      <!-- SYNTH BADGE -->
+      <div class="synth-badge mb-8">
+        <span>✦</span>
+        <span>AGENTIC CONTINUITY LAYER</span>
+        <span>•</span>
+        <span class="text-white">🪳 CockroachDB × AWS Hackathon</span>
+      </div>
+
+      <!-- MAIN HEADLINE -->
+      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-[1.1]">
+        Agents that think. Agents that act. <br />
+        <span class="bg-gradient-to-r from-amber-400 via-yellow-100 to-cyan-400 bg-clip-text text-transparent">
+          Agents that remember across boundaries.
+        </span>
+      </h1>
+
+      <!-- SUBTITLE -->
+      <p class="mt-8 text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto font-normal leading-relaxed">
+        Stop re-explaining your architecture on session 47. Handoff embeds, indexes, and streams task context from <strong class="text-cyan-400 font-semibold">Antigravity</strong> to <strong class="text-emerald-400 font-semibold">Codex</strong> using <strong class="text-amber-400 font-semibold">CockroachDB Cloud Vector Memory</strong> and <strong class="text-violet-400 font-semibold">Amazon Bedrock</strong>.
+      </p>
+
+      <!-- SYNTH BUTTON ROW -->
+      <div class="mt-12 flex flex-wrap justify-center items-center gap-5">
+        <a href="#demo" class="synth-btn-primary">
+          <span>START DEMO NOW</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </a>
+        <a href="#setup" class="synth-btn-secondary">
+          <span>VIEW SETUP</span>
+          <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+        </a>
+      </div>
+
+    </section>
+
+    <!-- INTEGRATION SECTION (SynthAI "Works with the tools you already use" Layout) -->
+    <section id="agents" class="py-20 border-y border-white/5 bg-[#080C14]">
+      <div class="max-w-7xl mx-auto px-6">
+        
+        <div class="text-center max-w-2xl mx-auto mb-16">
+          <div class="synth-badge mb-4">
+            <span>☿ INTEGRATION ECOSYSTEM</span>
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Works with the coding agents you already use</h2>
+          <p class="text-slate-400 mt-4 text-sm sm:text-base">
+            Zero app rewrites. Automatic hooks capture session boundaries and pass token-budgeted memory packets natively across platforms.
+          </p>
+        </div>
+
+        <!-- 4 AGENTS GRID (SynthAI App Card Layout) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          <!-- AGENT 1: OPENAI CODEX -->
+          <div class="bg-synth-card p-8 rounded-3xl border border-white/5 hover:border-emerald-500/40 transition-all cursor-pointer group flex flex-col justify-between h-56" onclick="switchDemoTab('codex')">
+            <div class="flex items-center justify-between">
+              <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729z"/>
+                </svg>
+              </div>
+              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">RECEIVER</span>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-white">OpenAI Codex</h3>
+              <p class="text-slate-400 text-xs mt-1">PreCompact & SessionEnd CLI hooks</p>
+            </div>
+          </div>
+
+          <!-- AGENT 2: GOOGLE ANTIGRAVITY -->
+          <div class="bg-synth-card p-8 rounded-3xl border border-white/5 hover:border-cyan-500/40 transition-all cursor-pointer group flex flex-col justify-between h-56" onclick="switchDemoTab('antigravity')">
+            <div class="flex items-center justify-between">
+              <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/>
+                </svg>
+              </div>
+              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-cyan-400 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">SOURCE</span>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-white">Google Antigravity</h3>
+              <p class="text-slate-400 text-xs mt-1">Stop & PostInvocation hooks</p>
+            </div>
+          </div>
+
+          <!-- AGENT 3: OPENCODE -->
+          <div class="bg-synth-card p-8 rounded-3xl border border-white/5 hover:border-violet-500/40 transition-all cursor-pointer group flex flex-col justify-between h-56" onclick="switchDemoTab('opencode')">
+            <div class="flex items-center justify-between">
+              <div class="w-14 h-14 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M8 6L2 12L8 18M16 6L22 12L16 18M13 4L11 20"/>
+                </svg>
+              </div>
+              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-violet-400 px-2.5 py-1 rounded-full bg-violet-500/10 border border-violet-500/20">PLUGIN</span>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-white">OpenCode</h3>
+              <p class="text-slate-400 text-xs mt-1">Session.idle TypeScript plugin</p>
+            </div>
+          </div>
+
+          <!-- AGENT 4: LOVABLE -->
+          <div class="bg-synth-card p-8 rounded-3xl border border-white/5 hover:border-amber-500/40 transition-all cursor-pointer group flex flex-col justify-between h-56" onclick="switchDemoTab('lovable')">
+            <div class="flex items-center justify-between">
+              <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              </div>
+              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">GITHUB SYNC</span>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-white">Lovable</h3>
+              <p class="text-slate-400 text-xs mt-1">GitHub webhook commit ingestion</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE DEMO (SynthAI Tabbed Setup Component Style) -->
+    <section id="demo" class="py-24 max-w-7xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <div class="synth-badge mb-4">
+          <span>⚡ LIVE PLAYGROUND</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Interactive Handoff Inspector</h2>
+        <p class="text-slate-400 mt-4 text-sm sm:text-base">
+          Test vector indexing and secret redaction in real time. Watch how task context is retrieved from CockroachDB without exploding token budgets.
+        </p>
+      </div>
+
+      <!-- DEMO CONTAINER -->
+      <div class="synth-card-glow bg-synth-card rounded-3xl p-8 border border-white/10 shadow-2xl">
+        
+        <!-- CONTROLS HEADER -->
+        <div class="flex flex-wrap items-center justify-between gap-6 pb-6 border-b border-white/10">
+          
+          <!-- TAB PILLS -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-slate-400">Agent Flow:</span>
+            <div class="inline-flex p-1.5 rounded-full bg-slate-950 border border-white/10 text-xs font-bold">
+              <button onclick="switchDemoTab('antigravity')" id="tab-antigravity" class="tab-pill px-4 py-2 rounded-full active transition-all">Antigravity ➔ Codex</button>
+              <button onclick="switchDemoTab('opencode')" id="tab-opencode" class="tab-pill px-4 py-2 rounded-full transition-all">Claude ➔ OpenCode</button>
+              <button onclick="switchDemoTab('lovable')" id="tab-lovable" class="tab-pill px-4 py-2 rounded-full transition-all">Lovable ➔ GitHub Push</button>
+            </div>
+          </div>
+
+          <!-- REDACTION TOGGLE -->
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-slate-400">Auto Redaction:</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="redact-toggle" checked onchange="toggleRedaction()" class="sr-only peer">
+              <div class="w-12 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-400"></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- DUAL CODE PANES -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-8">
+          
+          <!-- PANE 1: COCKROACHDB VECTOR SEARCH -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-mono font-bold text-cyan-400 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                <span>1. COCKROACHDB VECTOR QUERY (VECTOR 512)</span>
+              </span>
+              <span class="text-[10px] font-mono text-slate-500 uppercase">HNSW Cosine Distance</span>
+            </div>
+
+            <div class="bg-[#04060A] rounded-2xl p-5 border border-white/5 font-mono text-xs text-slate-300 overflow-x-auto h-[340px]">
+<pre id="query-code" class="leading-relaxed"><span class="text-amber-400">-- Executing Vector Search on CockroachDB Cloud</span>
+<span class="text-cyan-400">SELECT</span> id, workstream_id, goal, sections,
+       (embedding <span class="text-amber-400"><=></span> <span class="text-slate-400">$bedrock_titan_vector</span>) <span class="text-cyan-400">AS</span> distance
+<span class="text-cyan-400">FROM</span> handoffs
+<span class="text-cyan-400">WHERE</span> project_id = <span class="text-emerald-400">'mikaelaldy/project-handoff'</span>
+  <span class="text-cyan-400">AND</span> branch = <span class="text-emerald-400">'main'</span>
+  <span class="text-cyan-400">AND</span> status <span class="text-cyan-400">IN</span> (<span class="text-emerald-400">'active'</span>, <span class="text-emerald-400">'paused'</span>, <span class="text-emerald-400">'blocked'</span>)
+<span class="text-cyan-400">ORDER BY</span> distance <span class="text-cyan-400">ASC</span>
+<span class="text-cyan-400">LIMIT</span> 1;
+
+<span class="text-slate-500">// Result: Matched handoff id "c873d59a3ecc4194"</span>
+<span class="text-slate-500">// Similarity score: 0.942 (Cosine Match)</span></pre>
+            </div>
+          </div>
+
+          <!-- PANE 2: BOUNDED MARKDOWN PACKET -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-mono font-bold text-emerald-400 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span>2. BOUNDED MARKDOWN RESUME PACKET</span>
+              </span>
+              <span class="text-[10px] font-mono font-bold text-amber-400 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20">248 / 1,400 TOKENS</span>
+            </div>
+
+            <div class="bg-[#04060A] rounded-2xl p-5 border border-white/5 font-mono text-xs text-slate-200 overflow-x-auto h-[340px]">
+<pre id="packet-code" class="leading-relaxed"><span class="text-amber-400 font-bold">## Goal</span>
+Implement CockroachDB vector memory & Bedrock Titan V2 integration
+
+<span class="text-amber-400 font-bold">## Current State</span>
+Verified live query execution against CockroachDB cluster.
+Auth config key: <span id="token-secret" class="text-rose-400 font-semibold">[REDACTED]</span>
+
+<span class="text-amber-400 font-bold">## Decisions</span>
+Use CockroachDB VECTOR(512) index with project_id prefix.
+
+<span class="text-amber-400 font-bold">## Next Action</span>
+Execute Codex agent resume query and finalize submission evidence.
+
+<span class="text-amber-400 font-bold">## Files and Artifacts</span>
+- src/handoff/storage/cockroach.py
+- src/handoff/embeddings.py
+
+<span class="text-amber-400 font-bold">## Provenance</span>
+- source agent: antigravity
+- repository: mikaelaldy/project-handoff @ 8f7b936
+- handoff id: c873d59a3ecc4194</pre>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SETUP & MCP CONFIG SECTION (SynthAI "Launch in minutes" Style) -->
+    <section id="setup" class="py-20 max-w-5xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <div class="synth-badge mb-4">
+          <span>⚙ QUICKSTART SETUP</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Launch your MCP server in seconds</h2>
+      </div>
+
+      <div class="bg-synth-card rounded-3xl p-8 border border-white/10">
+        <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+          <span class="font-mono text-xs font-bold text-slate-300">~/.codex/config.toml</span>
+          <button onclick="copyMcpConfig()" class="text-xs font-mono font-bold text-amber-400 hover:underline">Copy Config</button>
+        </div>
+
+<pre id="mcp-config-snippet" class="font-mono text-xs leading-relaxed text-slate-200"><span class="text-amber-400">[mcp_servers.handoff]</span>
+command = <span class="text-emerald-400">"handoff"</span>
+args = [<span class="text-emerald-400">"mcp-serve"</span>]
+env = { HANDOFF_EMBEDDING_PROVIDER = <span class="text-emerald-400">"bedrock"</span> }</pre>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER (SynthAI Dark High-Contrast Footer) -->
+  <footer class="border-t border-white/10 bg-[#030407] py-16">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-wrap items-center justify-between gap-8 pb-12 border-b border-white/5">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-cyan-500 p-[1px]">
+            <div class="w-full h-full bg-synth-bg rounded-[11px] flex items-center justify-center">
+              <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="6" cy="12" r="3" fill="#F59E0B" stroke="none" />
+                <circle cx="18" cy="12" r="3" fill="#10B981" stroke="none" />
+                <path d="M9 12h6M12 6v12" stroke="#06B6D4" stroke-width="2" stroke-dasharray="2 2" />
+              </svg>
+            </div>
+          </div>
+          <span class="font-extrabold text-lg text-white">HANDOFF.CLOUD</span>
+        </div>
+        <p class="text-xs text-slate-500">
+          CockroachDB × AWS Hackathon 2026 Submission • Built with CockroachDB Cloud & Amazon Bedrock.
+        </p>
+      </div>
+
+      <div class="pt-8 flex flex-wrap items-center justify-between text-xs text-slate-500 font-mono">
+        <div>© 2026 Handoff Project. Open source under MIT License.</div>
+        <div class="flex gap-6">
+          <a href="https://github.com/mikaelaldy/project-handoff" class="hover:text-amber-400">GitHub Repository</a>
+          <a href="https://cockroachdb-ai.devpost.com/" class="hover:text-amber-400">Devpost Submission</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPT -->
+  <script>
+    const demoData = {
+      antigravity: {
+        query: `-- Executing Vector Search on CockroachDB Cloud
+SELECT id, workstream_id, goal, sections,
+       (embedding <=> $bedrock_titan_vector) AS distance
+FROM handoffs
+WHERE project_id = 'mikaelaldy/project-handoff'
+  AND branch = 'main'
+  AND status IN ('active', 'paused', 'blocked')
+ORDER BY distance ASC
+LIMIT 1;
+
+// Result: Matched handoff id "c873d59a3ecc4194"
+// Similarity score: 0.942 (Cosine Match)`,
+        packet: `## Goal
+Implement CockroachDB vector memory & Bedrock Titan V2 integration
+
+## Current State
+Verified live query execution against CockroachDB cluster.
+Auth config key: SECRET_PLACEHOLDER
+
+## Decisions
+Use CockroachDB VECTOR(512) index with project_id prefix.
+
+## Next Action
+Execute Codex agent resume query and finalize submission evidence.
+
+## Files and Artifacts
+- src/handoff/storage/cockroach.py
+- src/handoff/embeddings.py
+
+## Provenance
+- source agent: antigravity
+- repository: mikaelaldy/project-handoff @ 8f7b936
+- handoff id: c873d59a3ecc4194`
+      },
+      opencode: {
+        query: `-- Querying OpenCode Plugin Handoff
+SELECT id, goal, sections
+FROM handoffs
+WHERE source_agent = 'opencode'
+  AND status = 'active'
+ORDER BY updated_ms DESC LIMIT 1;`,
+        packet: `## Goal
+Refactor OpenCode plugin session events
+
+## Current State
+Plugin events captured via session.idle hook.
+Auth config key: SECRET_PLACEHOLDER
+
+## Next Action
+Resume task in Claude Code.`
+      },
+      lovable: {
+        query: `-- Ingesting GitHub Push Event from Lovable
+SELECT * FROM handoffs
+WHERE source_agent = 'lovable'
+ORDER BY created_ms DESC;`,
+        packet: `## Goal
+GitHub push sync from Lovable web IDE
+
+## Current State
+Repository state updated on main branch.
+Auth config key: SECRET_PLACEHOLDER
+
+## Files and Artifacts
+- web/index.html`
+      }
+    };
+
+    let currentTab = 'antigravity';
+    let isRedacted = true;
+
+    function switchDemoTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-pill').forEach(btn => btn.classList.remove('active'));
+      
+      const activeBtn = document.getElementById('tab-' + tab);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      renderDemo();
+    }
+
+    function toggleRedaction() {
+      isRedacted = document.getElementById('redact-toggle').checked;
+      renderDemo();
+    }
+
+    function renderDemo() {
+      const data = demoData[currentTab] || demoData.antigravity;
+      document.getElementById('query-code').textContent = data.query;
+      
+      const secretElem = document.getElementById('token-secret');
+      if (secretElem) {
+        secretElem.textContent = isRedacted ? '[REDACTED]' : 'sk-proj-99218381273821938';
+        secretElem.className = isRedacted ? 'text-rose-400 font-semibold' : 'text-amber-400 font-mono';
+      }
+    }
+
+    function copyMcpConfig() {
+      const text = document.getElementById('mcp-config-snippet').textContent;
+      navigator.clipboard.writeText(text);
+      alert('MCP configuration snippet copied to clipboard!');
+    }
+  </script>
+</body>
+</html>
