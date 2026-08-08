@@ -12,16 +12,18 @@ This is a planning roadmap, not an implementation status report.
 
 Exit condition: written approval to implement.
 
-## Phase 1 — portable local core
+## Phase 1 — hackathon memory core
 
 - Define the handoff envelope.
 - Define project, repository, branch, and workstream identity.
 - Implement event idempotency rules.
 - Implement bounded resume packet rules.
-- Implement SQLite persistence.
-- Implement deterministic partial handoff fallback.
+- Implement CockroachDB persistence first.
+- Create the real SQL tables and vector index used by resume retrieval.
+- Implement deterministic partial handoff fallback when Bedrock fails.
+- Keep SQLite behind the same storage interface as a development and post-hackathon fallback.
 
-Exit condition: seeded local data can be saved and resumed without a model or cloud account.
+Exit condition: seeded data can be saved to CockroachDB, retrieved through the real resume path, and inspected through the CockroachDB Cloud Managed MCP Server.
 
 ## Phase 2 — MCP and automatic lifecycle capture
 
@@ -34,17 +36,13 @@ Exit condition: seeded local data can be saved and resumed without a model or cl
 
 Exit condition: two local agents can create and resume a handoff using the same project and branch.
 
-## Phase 3 — cloud memory and AWS path
+## Phase 3 — AWS processing path
 
-- Add CockroachDB storage adapter.
-- Create SQL tables for workstreams, events, handoffs, and embeddings.
-- Create the Distributed Vector Indexing path.
-- Configure Managed MCP Server for read-only database inspection.
 - Add Bedrock structured extraction.
 - Add Bedrock embedding generation.
 - Add Lambda checkpoint processor.
 
-Exit condition: a handoff is processed by Lambda, stored in CockroachDB, retrieved by vector similarity, and returned through MCP.
+Exit condition: a handoff is processed by Lambda, summarized and embedded by Bedrock, stored in CockroachDB, retrieved by Distributed Vector Indexing, and returned through MCP.
 
 ## Phase 4 — Lovable and GitHub path
 
@@ -62,7 +60,7 @@ Exit condition: Lovable-generated code can be pulled into OpenCode and resumed w
 - Add seed scenarios for quota stop, context pressure, and crash/partial capture.
 - Add a CockroachDB inspection view or scripted query evidence.
 - Add Lambda and Bedrock processing logs.
-- Add a local-mode fallback demo.
+- Add a local-mode fallback demo only after the required cloud path works.
 - Test the full acceptance criteria.
 
 Exit condition: the complete workflow is repeatable without relying on a live provider quota.

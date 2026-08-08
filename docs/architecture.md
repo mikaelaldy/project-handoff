@@ -95,7 +95,7 @@ Local Handoff process
     +--> Ollama or deterministic extractor: optional compression
 ```
 
-The local backend is not a reduced fake. It is the long-term vendor-neutral mode. The cloud backend adds multi-device synchronization and the hackathon integrations.
+The local backend is a portability and failure fallback. The hackathon cloud backend is the primary implementation path and must be exercised end to end before the local fallback is considered complete.
 
 ## Data flow
 

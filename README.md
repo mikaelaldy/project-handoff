@@ -10,6 +10,8 @@ The primary workflow is:
 
 The same core is intended to support OpenCode and Lovable through adapters.
 
+The hackathon implementation is cloud-first: CockroachDB Cloud, Amazon Bedrock, and AWS Lambda are part of the real primary path. SQLite and local models are portability fallbacks, not substitutes for the required submission integration.
+
 ## What Handoff is
 
 Handoff is:

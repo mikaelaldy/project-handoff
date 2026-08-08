@@ -121,19 +121,21 @@ Skipped: S3, EventBridge, ccloud CLI, Agent Skills. Add when raw artifact storag
 Implementation starts only after this planning repository is reviewed. The future implementation plan should create tasks in this order:
 
 1. Project identity and portable handoff schema.
-2. Local SQLite event and handoff store.
-3. MCP tools for start, checkpoint, resume, update, and complete.
-4. Deterministic compression fallback.
-5. Codex adapter and hooks.
-6. Antigravity adapter and hooks.
-7. OpenCode adapter and plugin.
-8. Lovable GitHub event ingestion and explicit checkpoint path.
-9. CockroachDB storage adapter and vector index.
-10. Bedrock extraction and embeddings adapter.
-11. Lambda asynchronous processing.
-12. Dashboard and CLI inspection surfaces.
-13. Demo fixtures and failure-mode verification.
-14. Deployment, README, architecture evidence, and submission packaging.
+2. CockroachDB event and handoff store.
+3. CockroachDB Distributed Vector Indexing and filtered resume query.
+4. CockroachDB Cloud Managed MCP Server inspection path.
+5. MCP tools for start, checkpoint, resume, update, and complete.
+6. Amazon Bedrock extraction and embeddings adapter.
+7. AWS Lambda asynchronous checkpoint processing.
+8. Deterministic partial-handoff fallback.
+9. Codex adapter and hooks.
+10. Antigravity adapter and hooks.
+11. OpenCode adapter and plugin.
+12. Lovable GitHub event ingestion and explicit checkpoint path.
+13. SQLite storage and local-model fallback.
+14. Dashboard and CLI inspection surfaces.
+15. Demo fixtures and failure-mode verification.
+16. Deployment, README, architecture evidence, and submission packaging.
 
 Each future code task must leave one runnable verification behind. No implementation belongs in this planning repository yet.
 
