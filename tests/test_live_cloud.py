@@ -4,7 +4,12 @@ from handoff.storage import CockroachHandoffStore, ResumeQuery
 from handoff.embeddings import BedrockEmbeddingProvider
 from handoff.aws.worker import process_checkpoint_event
 
-DB_URL = "postgresql://mikaelacpr:q0aRY3hlz-b10Zqt9gEFFw@thorn-pigeon-29975.j77.aws-ap-southeast-3.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full"
+DB_URL = os.environ.get("HANDOFF_DB_URL")
+
+pytestmark = pytest.mark.skipif(
+    not DB_URL,
+    reason="set HANDOFF_DB_URL to run the live CockroachDB + Bedrock integration test",
+)
 
 def test_live_cockroach_and_bedrock_vector_search():
     # 1. Initialize CockroachDB primary storage (creates table + vector index)
