@@ -1,81 +1,159 @@
-# Handoff
+# Project Handoff
 
-> Continue unfinished work with a different AI coding agent.
+> Continue unfinished work with a different AI coding agent — powered by CockroachDB Cloud & AWS.
 
-Handoff is a vendor-neutral, open-source continuity layer for AI-assisted development. It captures the useful state of an unfinished coding task, compresses it into a bounded handoff, and makes that context available to another agent.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CockroachDB](https://img.shields.io/badge/Database-CockroachDB_Cloud-blue.svg)](https://www.cockroachlabs.com/cloud/)
+[![AWS Bedrock](https://img.shields.io/badge/AI-Amazon_Bedrock-orange.svg)](https://aws.amazon.com/bedrock/)
 
-The primary workflow is:
+**Project Handoff** is a vendor-neutral, open-source continuity layer for AI-assisted development. It captures the progress, decisions, blockers, and next actions of an unfinished coding task, embeds and indexes them in **CockroachDB Cloud** via **Amazon Bedrock**, and makes that context available to another AI agent through **MCP (Model Context Protocol)**.
 
-> Antigravity stops → Handoff saves the work → Codex continues.
+Primary workflow demo:
+> **Antigravity** (or Claude Code) stops → Handoff captures state & embeds via Bedrock → Saved in CockroachDB Vector Memory → **Codex** (or OpenCode) resumes seamlessly.
 
-The same core is intended to support OpenCode and Lovable through adapters.
+---
 
-The hackathon implementation is cloud-first: CockroachDB Cloud, Amazon Bedrock, and AWS Lambda are part of the real primary path. SQLite and local models are portability fallbacks, not substitutes for the required submission integration.
+## 🏗 Architecture & Hackathon Integration
 
-## What Handoff is
+```
+                                 +---------------------------------------+
+                                 |          AI Coding Clients            |
+                                 |  (Codex, Antigravity, OpenCode, etc.) |
+                                 +-------------------+-------------------+
+                                                     |
+                                                     | MCP / CLI Hooks
+                                                     v
+                                 +---------------------------------------+
+                                 |             Handoff Core              |
+                                 |    (Envelope, Redaction, Budgeting)   |
+                                 +---------+-------------------+---------+
+                                           |                   |
+                                           v                   v
++----------------------------------------------+   +----------------------------------------------+
+|            CockroachDB Cloud Memory          |   |                 AWS Services                 |
+|  - Managed MCP Server (Audit & Query)       |   |  - Amazon Bedrock (Titan Text Embeddings V2) |
+|  - Distributed Vector Indexing (VECTOR 512)  |   |  - AWS Lambda (Async Checkpoint Processor)   |
++----------------------------------------------+   +----------------------------------------------+
+                                           |
+                                           +---> Local Fallback (SQLite + Lexical Embeddings)
+```
 
-Handoff is:
+### 🪳 CockroachDB Tools Used
 
-- An MCP server that exposes save, resume, and search tools
-- A project- and Git-aware task ledger
-- An automatic session summarizer inspired by Hermes-style context compression
-- A portable handoff format that works across agents
-- A local-first product with optional cloud deployment
+| Tool | How it is used in Handoff |
+| --- | --- |
+| **Distributed Vector Indexing** | Stores `VECTOR(512)` embeddings generated for each task section. Uses `CREATE VECTOR INDEX` to perform fast approximate nearest-neighbor (ANN) similarity search across handoffs scoped by project and branch. |
+| **Managed MCP Server** | Connects to `https://cockroachlabs.cloud/mcp` allowing AI agents to directly inspect live database schema and task state with full auditability. |
 
-Handoff is not:
+### ☁️ AWS Services Used
 
-- A replacement for OpenCode, Codex, Antigravity, or Lovable
-- A new coding agent
-- A general-purpose chatbot memory database
-- A system that promises to recover context it never received
+| Service | How it is used in Handoff |
+| --- | --- |
+| **Amazon Bedrock** | Invokes `amazon.titan-embed-text-v2:0` to convert task goals, status updates, decisions, and file paths into 512-dimensional normalized vector embeddings. |
+| **AWS Lambda** | Runs asynchronous background worker (`src/handoff/aws/worker.py`) that processes lifecycle events and writes complete handoffs to CockroachDB. |
 
-## MVP
+---
 
-The MVP solves one problem:
+## ⚡ Quickstart
 
-> When an AI coding agent stops before finishing, another agent can continue without starting over.
+### 1. Prerequisites
 
-First-class adapter targets:
+- Python 3.11+
+- CockroachDB Cloud database URL (`postgresql://...`)
+- AWS CLI configured with active Bedrock permissions
 
-- Codex
-- Antigravity
-- OpenCode
-- Lovable through GitHub sync and explicit MCP checkpoints
+### 2. Installation
 
-The first judging path is Antigravity → Codex. Lovable → OpenCode is a secondary product example.
+```bash
+git clone https://github.com/mikaelaldy/project-handoff.git
+cd project-handoff
+pip install -e '.[cockroach,aws,mcp,cli,test]'
+```
 
-## Hackathon mode
+### 3. Environment Setup
 
-During the CockroachDB × AWS hackathon:
+```bash
+# Download CockroachDB CA Certificate
+curl --create-dirs -o $HOME/.postgresql/root.crt 'https://cockroachlabs.cloud/clusters/<your-cluster-id>/cert'
 
-- CockroachDB Cloud is the durable memory backend.
-- CockroachDB Distributed Vector Indexing powers similar-task retrieval.
-- The CockroachDB Cloud Managed MCP Server provides an audited database access surface.
-- Amazon Bedrock extracts compact handoff state and creates embeddings.
-- AWS Lambda runs background processing after checkpoints and GitHub events.
+# Export environment variables
+export HANDOFF_DATABASE_URL="postgresql://<user>:<password>@<host>:26257/defaultdb?sslmode=verify-full"
+export HANDOFF_EMBEDDING_PROVIDER="bedrock"
+export AWS_REGION="us-east-1"
+```
 
-After the hackathon, the core remains usable with SQLite, local files, Ollama, and other OpenAI-compatible providers.
+### 4. Running the Local Test Suite
 
-## Project status
+Verify both local fallback and live cloud integrations:
 
-Planning only. This repository intentionally contains specifications and research first. Implementation starts only after the plan is reviewed.
+```bash
+pytest tests/ -v
+```
 
-## Planned docs
+---
 
-- [Concept](docs/concept.md)
-- [Architecture](docs/architecture.md)
-- [Memory and handoff model](docs/memory-model.md)
-- [Integration strategy](docs/integrations.md)
-- [Hackathon requirements](docs/hackathon-requirements.md)
-- [Roadmap](docs/roadmap.md)
-- [Research and prior art](research/prior-art.md)
+## 🛠 Usage & Tool Surface
 
-## License
+### Using via MCP Server
 
-MIT. See [LICENSE](LICENSE).
+Add to your MCP-compatible client config (e.g. Codex or Claude Code):
 
-## Research note
+```json
+{
+  "mcpServers": {
+    "handoff": {
+      "command": "handoff",
+      "args": ["mcp-serve"]
+    }
+  }
+}
+```
 
-The architecture was informed by official Codex, Antigravity, OpenCode, Lovable, MCP, CockroachDB, AWS, and Hermes documentation, plus unrelated open-source projects listed in [research/prior-art.md](research/prior-art.md).
+#### Exposed MCP Tools:
 
-Current hackathon submissions were intentionally excluded from the prior-art research.
+1. **`handoff_checkpoint`**: Saves an active handoff (goal, state, decisions, blockers, files).
+2. **`handoff_resume`**: Retrieves token-budgeted, vector-ranked handoffs for a project/branch.
+3. **`handoff_get`**: Fetches full handoff by ID.
+4. **`handoff_list`**: Lists workstreams by status.
+5. **`handoff_complete`**: Marks a workstream finished so it drops out of the active resume list.
+
+### Using via CLI
+
+```bash
+# Initialize schema
+handoff init
+
+# Save checkpoint from JSON payload
+cat event.json | handoff checkpoint --event -
+
+# Resume unfinished workstream
+handoff resume --project "my-app" --repo "mikaelaldy/my-app" --branch "main"
+
+# Complete workstream
+handoff complete --workstream "<workstream-id>"
+```
+
+### Installing Agent Hooks
+
+Auto-capture hooks for AI coding assistants:
+
+```bash
+handoff-hooks all
+```
+This generates:
+- Codex hooks in `~/.codex/hooks.json` (`PreCompact`, `SessionEnd`)
+- Antigravity hooks in `~/.gemini/config/hooks.json` (`Stop`, `PostInvocation`)
+- OpenCode plugin in `~/.config/opencode/plugins/handoff.ts`
+
+---
+
+## 🔒 Security & Privacy
+
+- Secret redaction runs automatically before persisting any handoff (API keys, tokens, SSH keys, passwords).
+- Token-bounded resume payloads prevent prompt-injection bloat and context explosion.
+
+---
+
+## 📜 License
+
+MIT License. See [LICENSE](LICENSE).
