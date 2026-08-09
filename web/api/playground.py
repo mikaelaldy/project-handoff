@@ -1,19 +1,10 @@
-"""Vercel serverless function: live vector search backed by CockroachDB + Bedrock.
-
-GET /api/playground?q=<query text>
-
-- Embeds the query (Bedrock when AWS creds are present; lexical fallback otherwise).
-- Runs the vector-ranked resume query against the CockroachDB cluster.
-- Returns the top handoff + its resume packet + real cosine distance.
-- On any failure (no creds, DB down, missing rows) returns {"mode": "example"}
-  so the frontend can render its static example with an honest label.
-"""
+"""Vercel serverless function: live vector search backed by CockroachDB + Bedrock."""
 
 import json
 import os
 import sys
 
-_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 _SRC = os.path.join(_ROOT, "src")
 if _SRC not in sys.path:
     sys.path.insert(0, _SRC)
@@ -57,8 +48,6 @@ def handler(event, context=None) -> dict:
         store.open()
         try:
             embedder = embedding_provider_from_env()
-            # Vector-ranked search, scoped to a source agent. Fetch the top
-            # candidates and pick the best one owned by the requested agent.
             rows = store.resume(
                 ResumeQuery(
                     project_id=PROJECT_ID,
