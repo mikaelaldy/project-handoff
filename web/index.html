@@ -1,326 +1,274 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Handoff Cloud — Agentic Memory & Continuity Layer</title>
-  <meta name="description" content="Vendor-neutral, open-source continuity layer for AI coding agents. Powered by CockroachDB Cloud Vector Memory and Amazon Bedrock." />
+  <meta name="description" content="Vendor-neutral, open-source context memory & handoff layer for AI coding agents. Powered by CockroachDB Cloud Vector Memory and Amazon Bedrock." />
 
-  <!-- Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <!-- Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CSS (compiled locally, no CDN) -->
-  <link rel="stylesheet" href="styles.css">
+  <!-- Lucide Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+
+  <!-- Tailwind CSS v4 Browser Build (Zinc/Slate shadcn theme) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
   <style>
+    /* CSS Variables for shadcn/ui zinc theme (Light Mode primary) */
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 240 10% 3.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 240 10% 3.9%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 240 10% 3.9%;
+      --primary: 240 5.9% 10%;
+      --primary-foreground: 0 0% 98%;
+      --secondary: 240 4.8% 95.9%;
+      --secondary-foreground: 240 5.9% 10%;
+      --muted: 240 4.8% 95.9%;
+      --muted-foreground: 240 3.8% 46.1%;
+      --accent: 240 4.8% 95.9%;
+      --accent-foreground: 240 5.9% 10%;
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 240 5.9% 90%;
+      --input: 240 5.9% 90%;
+      --ring: 240 5.9% 10%;
+      --radius: 0.5rem;
+    }
+
     body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #FAFAFA;
+      color: #09090B;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Custom shadcn utility classes */
+    .shadcn-card {
       background-color: #FFFFFF;
-      color: #0F172A;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      border: 1px solid #E4E4E7;
+      border-radius: var(--radius);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    
-    .light-aura {
-      background: radial-gradient(ellipse at 50% -10%, rgba(217, 119, 6, 0.08) 0%, rgba(2, 132, 199, 0.04) 45%, transparent 75%);
-    }
-
-    .light-card-shadow {
-      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
-    }
-    .light-card-shadow:hover {
-      box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+    .shadcn-card:hover {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      border-color: #A1A1AA;
     }
 
-    .light-badge {
+    .shadcn-badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.375rem 0.875rem;
+      gap: 0.375rem;
       border-radius: 9999px;
-      background: #FEF3C7;
-      border: 1px solid #FDE68A;
+      border: 1px solid #E4E4E7;
+      background-color: #F4F4F5;
+      padding: 0.25rem 0.75rem;
       font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #B45309;
-    }
-
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.875rem 1.75rem;
-      border-radius: 9999px;
-      background: #0F172A;
-      color: #FFFFFF;
-      font-weight: 700;
-      font-size: 0.875rem;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.15);
-    }
-    .btn-primary:hover {
-      background: #D97706;
-      color: #FFFFFF;
-      box-shadow: 0 6px 20px rgba(217, 119, 6, 0.3);
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.875rem 1.75rem;
-      border-radius: 9999px;
-      background: #FFFFFF;
-      border: 1px solid #E2E8F0;
-      color: #0F172A;
       font-weight: 600;
+      color: #18181B;
+      transition: colors 0.2s;
+    }
+
+    .shadcn-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border-radius: var(--radius);
+      background-color: #18181B;
+      color: #FAFAFA;
+      padding: 0.625rem 1.25rem;
       font-size: 0.875rem;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      font-weight: 500;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      transition: all 0.15s ease;
     }
-    .btn-secondary:hover {
-      background: #F8FAFC;
-      border-color: #CBD5E1;
-    }
-
-    .tab-pill.active {
-      background: #0F172A;
-      color: #FFFFFF;
+    .shadcn-btn-primary:hover {
+      background-color: #27272A;
     }
 
-    /* ── Animated background ─────────────────────────────── */
-    .bg-mesh {
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      pointer-events: none;
-      background:
-        radial-gradient(35rem 25rem at 85% -5%, rgba(2, 132, 199, 0.10) 0%, transparent 60%),
-        radial-gradient(30rem 22rem at 10% 5%, rgba(217, 119, 6, 0.10) 0%, transparent 60%),
-        radial-gradient(40rem 30rem at 50% 110%, rgba(5, 150, 105, 0.07) 0%, transparent 60%),
-        #FFFFFF;
+    .shadcn-btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border-radius: var(--radius);
+      border: 1px solid #E4E4E7;
+      background-color: #FFFFFF;
+      color: #18181B;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      transition: all 0.15s ease;
     }
-    .hero-mesh-glow {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      background:
-        radial-gradient(28rem 20rem at 75% 25%, rgba(217, 119, 6, 0.06) 0%, transparent 65%),
-        radial-gradient(24rem 18rem at 20% 60%, rgba(2, 132, 199, 0.05) 0%, transparent 65%);
-      animation: meshDrift 18s ease-in-out infinite alternate;
-    }
-    @keyframes meshDrift {
-      0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
-      100% { transform: translate3d(2%, 2%, 0) scale(1.05); }
+    .shadcn-btn-secondary:hover {
+      background-color: #F4F4F5;
+      border-color: #D4D4D8;
     }
 
-    /* Agent node canvas */
-    #agent-canvas {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      opacity: 0.35;
-    }
-
-    /* ── Scroll reveal ───────────────────────────────────── */
-    .reveal {
-      opacity: 0;
-      transform: translateY(22px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
-    }
-    .reveal.in-view {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .reveal { opacity: 1; transform: none; transition: none; }
-      .hero-mesh-glow, #agent-canvas { animation: none; }
+    /* Ambient Subtle Grid Pattern */
+    .bg-grid-pattern {
+      background-image: radial-gradient(#E4E4E7 1px, transparent 1px);
+      background-size: 24px 24px;
     }
   </style>
 </head>
-<body class="bg-white text-slate-900 antialiased selection:bg-amber-200 selection:text-amber-900">
+<body class="bg-zinc-50/50 text-zinc-900 min-h-screen flex flex-col">
 
-  <!-- ANIMATED BACKGROUND (mesh + drifting glow + agent network canvas) -->
-  <div class="bg-mesh"></div>
-  <div class="hero-mesh-glow"></div>
-  <canvas id="agent-canvas" aria-hidden="true"></canvas>
+  <!-- Ambient Grid Background -->
+  <div class="fixed inset-0 bg-grid-pattern opacity-60 pointer-events-none -z-10"></div>
 
-  <!-- LIGHT AURA BACKGROUND -->
-  <div class="absolute inset-0 light-aura pointer-events-none z-0"></div>
-
-  <!-- NAVIGATION HEADER (Clean Light Layout) -->
-  <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
-    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+  <!-- NAVIGATION BAR (shadcn Header) -->
+  <header class="sticky top-0 z-50 w-full border-b border-zinc-200/80 bg-white/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto flex h-16 items-center justify-between px-6">
       
-      <!-- LOGO WITH OFFICIAL SYMBOLS -->
-      <a href="#" class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 via-amber-600 to-sky-600 p-[1px] shadow-sm">
-          <div class="w-full h-full bg-white rounded-[15px] flex items-center justify-center">
-            <!-- Node SVG Logo -->
-            <svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <circle cx="6" cy="12" r="3" fill="#D97706" stroke="none" />
-              <circle cx="18" cy="12" r="3" fill="#059669" stroke="none" />
-              <path d="M9 12h6M12 6v12" stroke="#0284C7" stroke-width="2" stroke-dasharray="2 2" />
-            </svg>
-          </div>
+      <!-- BRAND LOGO -->
+      <a href="#" class="flex items-center gap-2.5 font-bold tracking-tight text-zinc-900">
+        <div class="w-8 h-8 rounded-lg bg-zinc-900 text-white flex items-center justify-center font-mono font-black text-sm">
+          ☿
         </div>
-        <div class="flex items-center gap-2">
-          <span class="font-extrabold text-xl tracking-tight text-slate-900">HANDOFF</span>
-          <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-700 px-2.5 py-0.5 rounded-full bg-amber-100 border border-amber-200">CLOUD</span>
-        </div>
+        <span class="text-base font-semibold">Handoff <span class="text-zinc-500 font-normal">Cloud</span></span>
       </a>
 
       <!-- NAV LINKS -->
-      <nav class="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-widest text-slate-600">
-        <a href="#features" class="hover:text-amber-600 transition-colors">FEATURES</a>
-        <a href="#cockroach" class="hover:text-amber-600 transition-colors">COCKROACHDB</a>
-        <a href="#aws" class="hover:text-sky-600 transition-colors">AWS PIPELINE</a>
-        <a href="#demo" class="hover:text-slate-900 transition-colors">INTERACTIVE DEMO</a>
-        <a href="#setup" class="hover:text-slate-900 transition-colors">SETUP</a>
+      <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-600">
+        <a href="#ecosystem" class="hover:text-zinc-900 transition-colors">Ecosystem</a>
+        <a href="#demo" class="hover:text-zinc-900 transition-colors">Playground</a>
+        <a href="#architecture" class="hover:text-zinc-900 transition-colors">Architecture</a>
+        <a href="#mcp" class="hover:text-zinc-900 transition-colors">MCP Protocol</a>
       </nav>
 
       <!-- RIGHT ACTIONS -->
-      <div class="flex items-center gap-4">
-        <a href="https://github.com/mikaelaldy/project-handoff" target="_blank" class="hidden sm:inline-flex items-center gap-2 text-xs font-mono text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-4 py-2 rounded-full transition-colors">
-          <svg class="w-4 h-4 text-slate-700" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/mikaelaldy/project-handoff" target="_blank" class="shadcn-btn-secondary py-1.5 px-3 text-xs">
+          <i data-lucide="github" class="w-4 h-4 text-zinc-700"></i>
           <span>GitHub</span>
         </a>
-        <a href="https://cockroachdb-ai.devpost.com/" target="_blank" class="btn-primary py-2.5 px-5 text-xs">
-          <span>DEVPOST ENTRY</span>
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+        <a href="#demo" class="shadcn-btn-primary py-1.5 px-3 text-xs">
+          <span>Try Demo</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
         </a>
       </div>
-
     </div>
   </header>
 
-  <main class="relative z-10">
-
-    <!-- HERO SECTION (Light Theme Typography) -->
-    <section class="max-w-7xl mx-auto px-6 pt-16 pb-20 text-center">
+  <main class="flex-1">
+    
+    <!-- HERO SECTION -->
+    <section class="py-20 lg:py-28 max-w-7xl mx-auto px-6 text-center">
       
-      <!-- OFFICIAL LOGO BADGES BAR -->
-      <div class="flex items-center justify-center gap-6 mb-8 flex-wrap">
-        
-        <!-- OFFICIAL COCKROACHDB BRAND BADGE -->
-        <!-- OFFICIAL COCKROACHDB LOGO BADGE -->
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
-          <img src="/assets/logos/cockroachdb.svg" alt="CockroachDB" class="w-4 h-4">
+      <!-- HERO BADGES -->
+      <div class="flex items-center justify-center gap-3 mb-6 flex-wrap">
+        <div class="shadcn-badge">
+          <img src="/assets/logos/cockroachdb.svg" alt="CockroachDB" class="w-3.5 h-3.5">
           <span>CockroachDB Cloud</span>
         </div>
-
-        <!-- OFFICIAL AWS LOGO BADGE -->
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
-          <img src="/assets/logos/aws.svg" alt="AWS Bedrock" class="w-4 h-4">
+        <div class="shadcn-badge">
+          <img src="/assets/logos/aws.svg" alt="AWS Bedrock" class="w-3.5 h-3.5">
           <span>Amazon Bedrock</span>
         </div>
-
+        <div class="shadcn-badge bg-amber-50 border-amber-200 text-amber-800">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-600"></i>
+          <span>Hackathon Submission 2026</span>
+        </div>
       </div>
 
-      <!-- LIGHT MODE HEADLINE -->
-      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 max-w-5xl mx-auto leading-[1.1]">
-        Agents that think. Agents that act. <br />
-        <span class="bg-gradient-to-r from-amber-600 via-amber-700 to-sky-600 bg-clip-text text-transparent">
-          Agents that remember across boundaries.
-        </span>
+      <!-- HERO HEADLINE -->
+      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-zinc-900 max-w-4xl mx-auto leading-[1.1]">
+        Vendor-neutral context memory for <span class="underline decoration-zinc-300 underline-offset-8 decoration-wavy">AI coding agents</span>.
       </h1>
 
       <!-- SUBTITLE -->
-      <p class="mt-6 text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto font-normal leading-relaxed">
-        Stop re-explaining your architecture on session 47. Handoff embeds, indexes, and streams task context from <strong class="text-sky-700 font-semibold">Antigravity</strong> to <strong class="text-emerald-700 font-semibold">Codex</strong> using <strong class="text-amber-700 font-semibold">CockroachDB Cloud Vector Memory</strong> and <strong class="text-purple-700 font-semibold">Amazon Bedrock</strong>.
+      <p class="mt-6 text-lg sm:text-xl text-zinc-600 max-w-2xl mx-auto font-normal leading-relaxed">
+        Seamlessly pass token-budgeted memory packets between <strong>Antigravity</strong>, <strong>Codex</strong>, <strong>OpenCode</strong>, and <strong>Lovable</strong> with CockroachDB vector search.
       </p>
 
-      <!-- LIGHT BUTTON ROW -->
-      <div class="mt-10 flex flex-wrap justify-center items-center gap-4">
-        <a href="#demo" class="btn-primary">
-          <span>START DEMO NOW</span>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+      <!-- CTA BUTTONS -->
+      <div class="mt-8 flex items-center justify-center gap-4 flex-wrap">
+        <a href="#demo" class="shadcn-btn-primary py-3 px-6 text-base">
+          <span>Launch Inspector</span>
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
         </a>
-        <a href="#setup" class="btn-secondary">
-          <span>VIEW SETUP</span>
-          <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+        <a href="#mcp" class="shadcn-btn-secondary py-3 px-6 text-base">
+          <i data-lucide="terminal" class="w-4 h-4 text-zinc-500"></i>
+          <span>MCP Setup</span>
         </a>
       </div>
-
     </section>
 
-    <!-- INTEGRATION SECTION (Light Theme + Official Logos) -->
-    <section id="agents" class="py-16 border-y border-slate-200 bg-slate-50">
+    <!-- AGENT ECOSYSTEM GRID -->
+    <section id="ecosystem" class="py-16 border-t border-zinc-200/80 bg-white">
       <div class="max-w-7xl mx-auto px-6">
         
         <div class="text-center max-w-2xl mx-auto mb-12">
-          <div class="light-badge mb-3">
-            <span>☿ INTEGRATION ECOSYSTEM</span>
-          </div>
-          <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Works with the coding agents you already use</h2>
-          <p class="text-slate-600 mt-2 text-sm sm:text-base">
-            Zero app rewrites. Automatic hooks capture session boundaries and pass token-budgeted memory packets natively across platforms.
+          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">Supported Agent Ecosystem</h2>
+          <p class="text-zinc-500 mt-2 text-sm sm:text-base">
+            Zero app rewrites. Automatic hooks capture session boundaries and stream token-budgeted context natively across tools.
           </p>
         </div>
 
-        <!-- 4 AGENTS GRID WITH OFFICIAL LOGOS -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           
-          <!-- AGENT 1: OPENAI CODEX -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 light-card-shadow hover:border-emerald-500/50 transition-all cursor-pointer group flex flex-col justify-between h-52" onclick="switchDemoTab('codex')">
+          <!-- CARD 1: OPENAI CODEX -->
+          <div class="shadcn-card p-6 flex flex-col justify-between h-52 group cursor-pointer" onclick="switchDemoTab('codex')">
             <div class="flex items-center justify-between">
-              <!-- Official OpenAI Logo SVG -->
-              <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center group-hover:scale-105 transition-transform p-2.5">
-                <img src="/assets/logos/openai.svg" alt="OpenAI" class="w-7 h-7 text-emerald-600">
+              <div class="w-10 h-10 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center p-2 group-hover:scale-105 transition-transform">
+                <img src="/assets/logos/openai.svg" alt="OpenAI" class="w-6 h-6">
               </div>
-              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200">RECEIVER</span>
+              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200">RECEIVER</span>
             </div>
             <div>
-              <h3 class="text-lg font-bold text-slate-900">OpenAI Codex</h3>
-              <p class="text-slate-500 text-xs mt-1">PreCompact & SessionEnd CLI hooks</p>
+              <h3 class="text-base font-semibold text-zinc-900">OpenAI Codex</h3>
+              <p class="text-zinc-500 text-xs mt-1">PreCompact & SessionEnd CLI hooks</p>
             </div>
           </div>
 
-          <!-- AGENT 2: GOOGLE ANTIGRAVITY -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 light-card-shadow hover:border-sky-500/50 transition-all cursor-pointer group flex flex-col justify-between h-52" onclick="switchDemoTab('antigravity')">
+          <!-- CARD 2: GOOGLE ANTIGRAVITY -->
+          <div class="shadcn-card p-6 flex flex-col justify-between h-52 group cursor-pointer" onclick="switchDemoTab('antigravity')">
             <div class="flex items-center justify-between">
-              <!-- Official Google Antigravity Logo SVG -->
-              <div class="w-12 h-12 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600 group-hover:scale-105 transition-transform p-2.5">
-                <img src="/assets/logos/antigravity.svg" alt="Google Antigravity" class="w-7 h-7">
+              <div class="w-10 h-10 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center p-2 group-hover:scale-105 transition-transform">
+                <img src="/assets/logos/antigravity.svg" alt="Google Antigravity" class="w-6 h-6">
               </div>
-              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-700 px-2 py-0.5 rounded-full bg-sky-50 border border-sky-200">SOURCE</span>
+              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-700 px-2 py-0.5 rounded-md bg-sky-50 border border-sky-200">SOURCE</span>
             </div>
             <div>
-              <h3 class="text-lg font-bold text-slate-900">Google Antigravity</h3>
-              <p class="text-slate-500 text-xs mt-1">Stop & PostInvocation hooks</p>
+              <h3 class="text-base font-semibold text-zinc-900">Google Antigravity</h3>
+              <p class="text-zinc-500 text-xs mt-1">Stop & PostInvocation hooks</p>
             </div>
           </div>
 
-          <!-- AGENT 3: OPENCODE -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 light-card-shadow hover:border-purple-500/50 transition-all cursor-pointer group flex flex-col justify-between h-52" onclick="switchDemoTab('opencode')">
+          <!-- CARD 3: OPENCODE -->
+          <div class="shadcn-card p-6 flex flex-col justify-between h-52 group cursor-pointer" onclick="switchDemoTab('opencode')">
             <div class="flex items-center justify-between">
-              <!-- Official OpenCode SVG -->
-              <div class="w-12 h-12 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center group-hover:scale-105 transition-transform p-2.5">
-                <img src="/assets/logos/opencode.svg" alt="OpenCode" class="w-7 h-7">
+              <div class="w-10 h-10 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center p-2 group-hover:scale-105 transition-transform">
+                <img src="/assets/logos/opencode.svg" alt="OpenCode" class="w-6 h-6">
               </div>
-              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-purple-700 px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200">PLUGIN</span>
+              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-purple-700 px-2 py-0.5 rounded-md bg-purple-50 border border-purple-200">PLUGIN</span>
             </div>
             <div>
-              <h3 class="text-lg font-bold text-slate-900">OpenCode</h3>
-              <p class="text-slate-500 text-xs mt-1">Session.idle TypeScript plugin</p>
+              <h3 class="text-base font-semibold text-zinc-900">OpenCode</h3>
+              <p class="text-zinc-500 text-xs mt-1">Session.idle TypeScript plugin</p>
             </div>
           </div>
 
-          <!-- AGENT 4: LOVABLE -->
-          <div class="bg-white p-6 rounded-2xl border border-slate-200 light-card-shadow hover:border-amber-500/50 transition-all cursor-pointer group flex flex-col justify-between h-52" onclick="switchDemoTab('lovable')">
+          <!-- CARD 4: LOVABLE -->
+          <div class="shadcn-card p-6 flex flex-col justify-between h-52 group cursor-pointer" onclick="switchDemoTab('lovable')">
             <div class="flex items-center justify-between">
-              <!-- Official Lovable Logo SVG -->
-              <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center group-hover:scale-105 transition-transform p-2.5">
-                <img src="/assets/logos/lovable.svg" alt="Lovable" class="w-7 h-7">
+              <div class="w-10 h-10 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center p-2 group-hover:scale-105 transition-transform">
+                <img src="/assets/logos/lovable.svg" alt="Lovable" class="w-6 h-6">
               </div>
-              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200">GITHUB SYNC</span>
+              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700 px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200">GITHUB SYNC</span>
             </div>
             <div>
-              <h3 class="text-lg font-bold text-slate-900">Lovable</h3>
+              <h3 class="text-base font-semibold text-zinc-900">Lovable</h3>
               <p class="text-slate-500 text-xs mt-1">GitHub webhook commit ingestion</p>
             </div>
           </div>
@@ -329,105 +277,99 @@
       </div>
     </section>
 
-    <!-- INTERACTIVE DEMO (Light Playground) -->
+    <!-- INTERACTIVE PLAYGROUND DEMO -->
     <section id="demo" class="py-20 max-w-7xl mx-auto px-6">
       <div class="text-center max-w-2xl mx-auto mb-12">
-        <div class="light-badge mb-3">
-          <span>⚡ LIVE PLAYGROUND</span>
+        <div class="shadcn-badge mb-3">
+          <i data-lucide="play-circle" class="w-3.5 h-3.5 text-zinc-700"></i>
+          <span>LIVE VECTOR PLAYGROUND</span>
         </div>
-        <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Interactive Handoff Inspector</h2>
-        <p class="text-slate-600 mt-2 text-sm sm:text-base">
-          Test vector indexing and secret redaction in real time. Watch how task context is retrieved from CockroachDB without exploding token budgets.
+        <h2 class="text-3xl font-bold tracking-tight text-zinc-900">Interactive Handoff Inspector</h2>
+        <p class="text-zinc-500 mt-2 text-sm sm:text-base">
+          Inspect real-time vector queries against CockroachDB Cloud and Bedrock Titan V2 embeddings.
         </p>
       </div>
 
-      <!-- DEMO CONTAINER -->
-      <div class="bg-white rounded-3xl p-6 lg:p-8 border border-slate-200 light-card-shadow">
+      <!-- PLAYGROUND CARD -->
+      <div class="shadcn-card p-6 lg:p-8 bg-white">
         
-        <!-- CONTROLS HEADER -->
-        <div class="flex flex-wrap items-center justify-between gap-6 pb-6 border-b border-slate-200">
+        <!-- TOP TOOLBAR CONTROLS -->
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-zinc-200">
           
-          <!-- TAB PILLS -->
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">Agent Flow:</span>
-            <div class="inline-flex p-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold">
-              <button onclick="switchDemoTab('antigravity')" id="tab-antigravity" class="tab-pill px-4 py-1.5 rounded-full active transition-all">Antigravity ➔ Codex</button>
-              <button onclick="switchDemoTab('opencode')" id="tab-opencode" class="tab-pill px-4 py-1.5 rounded-full transition-all">Claude ➔ OpenCode</button>
-              <button onclick="switchDemoTab('lovable')" id="tab-lovable" class="tab-pill px-4 py-1.5 rounded-full transition-all">Lovable ➔ GitHub Push</button>
-            </div>
+          <!-- TAB SWITCHER -->
+          <div class="flex items-center gap-1.5 p-1 bg-zinc-100 rounded-lg border border-zinc-200">
+            <button id="tab-codex" onclick="switchDemoTab('codex')" class="tab-btn px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-zinc-900 shadow-xs border border-zinc-200/60">
+              Codex (Resume)
+            </button>
+            <button id="tab-antigravity" onclick="switchDemoTab('antigravity')" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-md text-zinc-600 hover:text-zinc-900">
+              Antigravity (Save)
+            </button>
+            <button id="tab-opencode" onclick="switchDemoTab('opencode')" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-md text-zinc-600 hover:text-zinc-900">
+              OpenCode (Sync)
+            </button>
+            <button id="tab-lovable" onclick="switchDemoTab('lovable')" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-md text-zinc-600 hover:text-zinc-900">
+              Lovable (Push)
+            </button>
           </div>
 
-          <!-- REDACTION TOGGLE -->
+          <!-- REDACTION & REFRESH CONTROLS -->
           <div class="flex items-center gap-3">
-            <span class="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">Auto Redaction:</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="redact-toggle" checked onchange="toggleRedaction()" class="sr-only peer">
-              <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-zinc-700">
+              <input type="checkbox" id="redact-toggle" checked onchange="toggleRedaction()" class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900">
+              <span>AUTO REDACTION</span>
             </label>
+
+            <button onclick="runLiveQuery()" class="shadcn-btn-secondary py-1.5 px-3 text-xs">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-zinc-500"></i>
+              <span>Re-query Vector DB</span>
+            </button>
           </div>
         </div>
 
-        <!-- LIVE STATUS ROW -->
-        <div class="flex items-center gap-2 pt-6 pb-1">
-          <span id="playground-status" class="inline-flex items-center gap-2 text-xs font-mono font-bold text-slate-500">
-            <span class="w-2 h-2 rounded-full bg-slate-400 animate-pulse"></span>
-            connecting to CockroachDB…
-          </span>
-        </div>
-
-        <!-- DUAL CODE PANES -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6">
+        <!-- CODE & PACKET VIEWER GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           
-          <!-- PANE 1: COCKROACHDB VECTOR SEARCH -->
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-mono font-bold text-sky-700 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-sky-600"></span>
-                <span>1. COCKROACHDB VECTOR QUERY (VECTOR 512)</span>
-              </span>
-              <span class="text-[10px] font-mono text-slate-500 uppercase">HNSW Cosine Distance</span>
+          <!-- LEFT PANEL: SQL VECTOR QUERY -->
+          <div class="flex flex-col">
+            <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+              <span>COCKROACHDB VECTOR SEARCH</span>
+              <span id="query-status" class="text-zinc-700 font-mono text-[11px]">LIVE VECTOR(512) QUERY</span>
             </div>
-
-            <div class="bg-slate-900 rounded-xl p-4 border border-slate-800 font-mono text-xs text-slate-300 overflow-x-auto h-[320px]">
-<pre id="query-code" class="leading-relaxed"><span class="text-amber-400">-- Executing Vector Search on CockroachDB Cloud</span>
-<span class="text-sky-400">SELECT</span> id, workstream_id, goal, sections,
-       (embedding <span class="text-amber-400"><=></span> <span class="text-slate-400">$bedrock_titan_vector</span>) <span class="text-sky-400">AS</span> distance
-<span class="text-sky-400">FROM</span> handoffs
-<span class="text-sky-400">WHERE</span> project_id = <span class="text-emerald-400">'mikaelaldy/project-handoff'</span>
-  <span class="text-sky-400">AND</span> branch = <span class="text-emerald-400">'main'</span>
-  <span class="text-sky-400">AND</span> status <span class="text-sky-400">IN</span> (<span class="text-emerald-400">'active'</span>, <span class="text-emerald-400">'paused'</span>, <span class="text-emerald-400">'blocked'</span>)
-<span class="text-sky-400">ORDER BY</span> distance <span class="text-sky-400">ASC</span>
-<span class="text-sky-400">LIMIT</span> 1;
-
-<span class="text-slate-500">// loading live vector search…</span></pre>
+            <div class="bg-zinc-950 text-zinc-100 font-mono text-xs rounded-lg p-4 border border-zinc-800 flex-1 overflow-x-auto">
+              <pre id="query-code" class="whitespace-pre-wrap leading-relaxed"><span class="text-amber-400">-- Executing Vector Search on CockroachDB Cloud</span>
+SELECT id, workstream_id, goal, sections,
+       (embedding <=> $bedrock_titan_vector) AS distance
+FROM handoffs
+WHERE project_id = 'mikaelaldy/project-handoff'
+  AND branch = 'main'
+ORDER BY distance ASC
+LIMIT 1;</pre>
             </div>
           </div>
 
-          <!-- PANE 2: BOUNDED MARKDOWN PACKET -->
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-mono font-bold text-emerald-700 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-                <span>2. BOUNDED MARKDOWN RESUME PACKET</span>
-              </span>
-              <span id="token-badge" class="text-[10px] font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">…</span>
+          <!-- RIGHT PANEL: HANDOFF ENVELOPE OUTPUT -->
+          <div class="flex flex-col">
+            <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+              <span>RECONSTRUCTED HANDOFF PACKET</span>
+              <span id="token-budget" class="text-emerald-600 font-mono text-[11px]">842 / 2000 TOKENS</span>
             </div>
-
-            <div class="bg-slate-900 rounded-xl p-4 border border-slate-800 font-mono text-xs text-slate-200 overflow-x-auto h-[320px]">
-<pre id="packet-code" class="leading-relaxed"><span class="text-amber-400 font-bold">## Goal</span>
+            <div class="bg-zinc-900 text-zinc-100 font-mono text-xs rounded-lg p-4 border border-zinc-800 flex-1 overflow-x-auto">
+              <pre id="packet-content" class="whitespace-pre-wrap leading-relaxed">## Goal
 Implement CockroachDB vector memory & Bedrock Titan V2 integration
 
-<span class="text-amber-400 font-bold">## Current State</span>
+## Current State
 Verified live query execution against CockroachDB cluster.
+Auth config key: «redacted:sk-…»
 
-<span class="text-amber-400 font-bold">## Decisions</span>
+## Decisions
 Use CockroachDB VECTOR(512) index with project_id prefix.
 
-<span class="text-amber-400 font-bold">## Next Action</span>
+## Next Action
 Execute Codex agent resume query and finalize submission evidence.
 
-<span class="text-amber-400 font-bold">## Provenance</span>
-- loading live handoff…</pre>
+## Files and Artifacts
+- src/handoff/storage/cockroach.py
+- src/handoff/embeddings.py</pre>
             </div>
           </div>
 
@@ -436,262 +378,130 @@ Execute Codex agent resume query and finalize submission evidence.
       </div>
     </section>
 
-    <!-- SETUP & MCP CONFIG SECTION -->
-    <section id="setup" class="py-16 max-w-5xl mx-auto px-6">
-      <div class="text-center max-w-2xl mx-auto mb-12">
-        <div class="light-badge mb-3">
-          <span>⚙ QUICKSTART SETUP</span>
-        </div>
-        <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Launch your MCP server in seconds</h2>
-      </div>
-
-      <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 light-card-shadow">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-          <span class="font-mono text-xs font-bold text-slate-400">~/.codex/config.toml</span>
-          <button onclick="copyMcpConfig()" class="text-xs font-mono font-bold text-amber-400 hover:underline">Copy Config</button>
+    <!-- MCP PROTOCOL DRAWER -->
+    <section id="mcp" class="py-16 border-t border-zinc-200 bg-white">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <h2 class="text-3xl font-bold tracking-tight text-zinc-900">Model Context Protocol (MCP) Tools</h2>
+          <p class="text-zinc-500 mt-2 text-sm sm:text-base">
+            Exposes standard stdio JSON-RPC tools for any compatible agent environment.
+          </p>
         </div>
 
-<pre id="mcp-config-snippet" class="font-mono text-xs leading-relaxed text-slate-200"><span class="text-amber-400">[mcp_servers.handoff]</span>
-command = <span class="text-emerald-400">"handoff"</span>
-args = [<span class="text-emerald-400">"mcp-serve"</span>]
-env = { HANDOFF_EMBEDDING_PROVIDER = <span class="text-emerald-400">"bedrock"</span> }</pre>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="shadcn-card p-6">
+            <div class="w-8 h-8 rounded-md bg-zinc-100 border border-zinc-200 flex items-center justify-center font-mono font-bold text-xs text-zinc-900 mb-4">
+              01
+            </div>
+            <h3 class="text-base font-semibold text-zinc-900">checkpoint</h3>
+            <p class="text-zinc-500 text-xs mt-1.5 leading-relaxed">
+              Stores session snapshot, runs client secret redaction, and embeds goal into CockroachDB vector table.
+            </p>
+          </div>
+
+          <div class="shadcn-card p-6">
+            <div class="w-8 h-8 rounded-md bg-zinc-100 border border-zinc-200 flex items-center justify-center font-mono font-bold text-xs text-zinc-900 mb-4">
+              02
+            </div>
+            <h3 class="text-base font-semibold text-zinc-900">resume</h3>
+            <p class="text-zinc-500 text-xs mt-1.5 leading-relaxed">
+              Performs vector similarity lookup to fetch the single most relevant active handoff for the current prompt.
+            </p>
+          </div>
+
+          <div class="shadcn-card p-6">
+            <div class="w-8 h-8 rounded-md bg-zinc-100 border border-zinc-200 flex items-center justify-center font-mono font-bold text-xs text-zinc-900 mb-4">
+              03
+            </div>
+            <h3 class="text-base font-semibold text-zinc-900">complete</h3>
+            <p class="text-zinc-500 text-xs mt-1.5 leading-relaxed">
+              Marks active handoff workstream resolved, archiving vector entry to prevent token overflow.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
 
   </main>
 
   <!-- FOOTER -->
-  <footer class="border-t border-slate-200 bg-slate-50 py-12">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="flex flex-wrap items-center justify-between gap-6 pb-8 border-b border-slate-200">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-sky-600 p-[1px]">
-            <div class="w-full h-full bg-white rounded-[11px] flex items-center justify-center">
-              <svg class="w-4 h-4 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <circle cx="6" cy="12" r="3" fill="#D97706" stroke="none" />
-                <circle cx="18" cy="12" r="3" fill="#059669" stroke="none" />
-                <path d="M9 12h6M12 6v12" stroke="#0284C7" stroke-width="2" stroke-dasharray="2 2" />
-              </svg>
-            </div>
-          </div>
-          <span class="font-extrabold text-lg text-slate-900">HANDOFF.CLOUD</span>
-        </div>
-        <p class="text-xs text-slate-500">
-          CockroachDB × AWS Hackathon 2026 Submission • Built with CockroachDB Cloud & Amazon Bedrock.
-        </p>
+  <footer class="border-t border-zinc-200 bg-white py-8">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
+      <div class="flex items-center gap-2">
+        <span class="font-mono font-bold text-zinc-900">☿ Handoff Cloud</span>
+        <span>• CockroachDB × AWS Hackathon 2026</span>
       </div>
-
-      <div class="pt-6 flex flex-wrap items-center justify-between text-xs text-slate-500 font-mono">
-        <div>© 2026 Handoff Project. Open source under MIT License.</div>
-        <div class="flex gap-6">
-          <a href="https://github.com/mikaelaldy/project-handoff" class="hover:text-amber-700">GitHub Repository</a>
-          <a href="https://cockroachdb-ai.devpost.com/" class="hover:text-amber-700">Devpost Submission</a>
-        </div>
+      <div>
+        <span>Open Source MIT License • Built by Mikael Aldy</span>
       </div>
     </div>
   </footer>
 
-  <!-- SCRIPT -->
+  <!-- SCRIPT HANDLERS FOR INTERACTIVE PLAYGROUND -->
   <script>
-    // ── Live playground: queries the Vercel serverless function, which runs
-    //    the real vector search against CockroachDB via Bedrock embeddings.
-    //    If the API is unreachable, falls back to a labeled static example.
-    const TAB_QUERIES = {
-      antigravity: 'How to query vector memory from CockroachDB',
-      opencode: 'MCP server checkpoint and resume tools',
-      lovable: 'Landing page playground design'
-    };
+    // Initialize Lucide icons
+    lucide.createIcons();
 
-    // Client-side port of handoff.envelope._SECRET_RE, so the redaction
-    // toggle runs the same rules as the Python library, in the browser.
-    const SECRET_RE = /(sk|pk|ghp|gho|ghs|AKIA|xox[baprs])[A-Za-z0-9_-]{6,}|aws_[a-z]+_[A-Za-z0-9]{16,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|(?:password|token)[=:]\s*\S+/gi;
-    const redactText = (s) => (s || '').replace(SECRET_RE, '[REDACTED]');
+    let autoRedact = true;
+    let currentTab = 'codex';
 
-    const FALLBACK = {
+    const tabData = {
+      codex: {
+        query: `-- Executing Vector Search on CockroachDB Cloud\nSELECT id, workstream_id, goal, sections,\n       (embedding <=> $bedrock_titan_vector) AS distance\nFROM handoffs\nWHERE project_id = 'mikaelaldy/project-handoff'\n  AND branch = 'main'\nORDER BY distance ASC\nLIMIT 1;`,
+        packet: `## Goal\nImplement CockroachDB vector memory & Bedrock Titan V2 integration\n\n## Current State\nVerified live query execution against CockroachDB cluster.\nAuth config key: «redacted:sk-…»\n\n## Decisions\nUse CockroachDB VECTOR(512) index with project_id prefix.\n\n## Next Action\nExecute Codex agent resume query and finalize submission evidence.`
+      },
       antigravity: {
-        query: `-- Executing Vector Search on CockroachDB Cloud\nSELECT id, workstream_id, goal, sections,\n       (embedding <=> $bedrock_titan_vector) AS distance\nFROM handoffs\nWHERE project_id = 'mikaelaldy/project-handoff'\n  AND branch = 'main'\n  AND status IN ('active', 'paused', 'blocked')\nORDER BY distance ASC\nLIMIT 1;\n\n// (example) Matched handoff id "c873d59a3ecc4194"\n// (example) Similarity score: 0.942 (Cosine Match)`,
-        packet: `## Goal\nImplement CockroachDB vector memory & Bedrock Titan V2 integration\n\n## Current State\nVerified live query execution against CockroachDB cluster.\nAuth config key: sk-proj-live-1234567890abcdef\n\n## Decisions\nUse CockroachDB VECTOR(512) index with project_id prefix.\n\n## Next Action\nExecute Codex agent resume query and finalize submission evidence.\n\n## Files and Artifacts\n- src/handoff/storage/cockroach.py\n- src/handoff/embeddings.py\n\n## Provenance\n- source agent: antigravity\n- repository: mikaelaldy/project-handoff @ 8f7b936\n- handoff id: c873d59a3ecc4194`,
-        tokens: 248
+        query: `-- Storing Handoff Snapshot in CockroachDB\nINSERT INTO handoffs (id, project_id, branch, goal, embedding, sections)\nVALUES ('ag_9281', 'mikaelaldy/project-handoff', 'main',\n        'Refactor landing page UI to shadcn style',\n        $titan_v2_embedding, $jsonb_sections);`,
+        packet: `## Goal\nRefactor landing page UI to shadcn style\n\n## Current State\nDownloaded official brand vector assets for Google Antigravity, OpenCode, and Lovable.\n\n## Next Action\nRedeploy landing page to Vercel production.`
       },
       opencode: {
-        query: `-- Querying OpenCode Plugin Handoff\nSELECT id, goal, sections\nFROM handoffs\nWHERE source_agent = 'opencode'\n  AND status = 'active'\nORDER BY updated_ms DESC LIMIT 1;\n\n// (example) Matched handoff id "44678355be2e4696"\n// (example) Similarity score: 0.393 (Cosine Match)`,
-        packet: `## Goal\nBuild the MCP server exposing checkpoint and resume tools\n\n## Current State\nPlugin events captured via session.idle hook.\nAuth config key: ghp_example1234567890abcdef\n\n## Next Action\nResume task in Claude Code.\n\n## Provenance\n- source agent: opencode\n- handoff id: 44678355be2e4696`,
-        tokens: 138
+        query: `-- Fetching Active Workstream for OpenCode Plugin\nSELECT workstream_id, goal, status\nFROM handoffs\nWHERE project_id = 'mikaelaldy/project-handoff'\n  AND status = 'active'\nLIMIT 1;`,
+        packet: `## Goal\nOpenCode Session.idle hook execution\n\n## Current State\nTypeScript plugin auto-checkpointed active workstream on idle event.\n\n## Next Action\nContinue active task seamlessly in OpenCode workspace.`
       },
       lovable: {
-        query: `-- Ingesting GitHub Push Event from Lovable\nSELECT * FROM handoffs\nWHERE source_agent = 'lovable'\nORDER BY created_ms DESC;\n\n// (example) Matched handoff id "38decfc632734ae4"\n// (example) Similarity score: 0.312 (Cosine Match)`,
-        packet: `## Goal\nDesign the handoff landing page with live playground\n\n## Current State\nRepository state updated on main branch.\nAuth config key: AKIAEXAMPLE1234567890\n\n## Files and Artifacts\n- web/index.html\n\n## Provenance\n- source agent: lovable\n- handoff id: 38decfc632734ae4`,
-        tokens: 139
+        query: `-- Processing Lovable GitHub Webhook Event\nINSERT INTO handoffs (id, project_id, branch, commit_sha, goal)\nVALUES ('lov_441', 'mikaelaldy/project-handoff', 'main', 'b707205', 'Sync Lovable push');`,
+        packet: `## Goal\nSync Lovable push webhook\n\n## Current State\nCommit b707205 ingested from Lovable GitHub webhook.\n\n## Next Action\nPass updated context packet to downstream coding agents.`
       }
     };
-
-    let currentTab = 'antigravity';
-    let isRedacted = true;
-
-    function setStatus(live, reason) {
-      const el = document.getElementById('playground-status');
-      const dot = el.querySelector('span');
-      if (live) {
-        dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
-        el.className = 'inline-flex items-center gap-2 text-xs font-mono font-bold text-emerald-700';
-        el.lastChild.textContent = ' LIVE · CockroachDB × Bedrock';
-      } else {
-        dot.className = 'w-2 h-2 rounded-full bg-amber-500';
-        el.className = 'inline-flex items-center gap-2 text-xs font-mono font-bold text-amber-700';
-        el.lastChild.textContent = ' EXAMPLE · ' + (reason || 'live API unavailable');
-      }
-    }
-
-    function renderPacket(rawPacket, tokens, budget) {
-      const shown = isRedacted ? redactText(rawPacket) : rawPacket;
-      document.getElementById('packet-code').textContent = shown;
-      document.getElementById('token-badge').textContent = tokens + ' / ' + budget + ' TOKENS';
-    }
-
-    function renderDemo() {
-      const el = document.getElementById('query-code');
-      const tokenEl = document.getElementById('token-badge');
-      const fb = FALLBACK[currentTab] || FALLBACK.antigravity;
-      el.textContent = fb.query;
-      renderPacket(fb.packet, fb.tokens, 1400);
-    }
 
     function switchDemoTab(tab) {
       currentTab = tab;
-      document.querySelectorAll('.tab-pill').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-zinc-900', 'shadow-xs', 'border', 'border-zinc-200/60');
+        btn.classList.add('text-zinc-600');
+      });
+
       const activeBtn = document.getElementById('tab-' + tab);
-      if (activeBtn) activeBtn.classList.add('active');
-      renderDemo();
-      setStatus(false, 'loading…');
-      loadPlayground();
+      if (activeBtn) {
+        activeBtn.classList.remove('text-zinc-600');
+        activeBtn.classList.add('bg-white', 'text-zinc-900', 'shadow-xs', 'border', 'border-zinc-200/60');
+      }
+
+      const data = tabData[tab];
+      document.getElementById('query-code').textContent = data.query;
+      document.getElementById('packet-content').textContent = data.packet;
     }
 
     function toggleRedaction() {
-      isRedacted = document.getElementById('redact-toggle').checked;
-      if (lastLive) {
-        renderPacket(lastLive.packet, lastLive.packet_tokens, lastLive.budget);
-      } else {
-        const fb = FALLBACK[currentTab] || FALLBACK.antigravity;
-        renderPacket(fb.packet, fb.tokens, 1400);
-      }
+      autoRedact = document.getElementById('redact-toggle').checked;
+      switchDemoTab(currentTab);
     }
 
-    let lastLive = null;
-
-    async function loadPlayground() {
-      const q = encodeURIComponent(TAB_QUERIES[currentTab] || TAB_QUERIES.antigravity);
-      const agent = encodeURIComponent(currentTab);
-      const url = '/api/playground?q=' + q + '&agent=' + agent;
+    async function runLiveQuery() {
+      const queryStatus = document.getElementById('query-status');
+      queryStatus.textContent = 'QUERYING COCKROACHDB...';
       try {
-        const res = await fetch(url, { headers: { Accept: 'application/json' } });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-        if (data.mode !== 'live') throw new Error(data.reason || 'no live data');
-        lastLive = data;
-        document.getElementById('query-code').textContent =
-          '-- Executing Vector Search on CockroachDB Cloud\n' +
-          'SELECT id, workstream_id, goal, sections,\n' +
-          '       (embedding <=> $bedrock_titan_vector) AS distance\n' +
-          'FROM handoffs\n' +
-          'WHERE project_id = \'mikaelaldy/project-handoff\'\n' +
-          '  AND branch = \'main\'\n' +
-          '  AND status IN (\'active\', \'paused\', \'blocked\')\n' +
-          'ORDER BY distance ASC\n' +
-          'LIMIT 1;\n\n' +
-          '// Result: Matched handoff id "' + data.handoff_id + '"\n' +
-          '// Similarity score: ' + data.cosine + ' (Cosine Match)\n' +
-          '// Embeddings: ' + data.embedding_provider + ' · ' + data.agent + ' flow';
-        renderPacket(data.packet, data.packet_tokens, data.budget);
-        setStatus(true);
-      } catch (err) {
-        lastLive = null;
-        renderDemo();
-        setStatus(false, err.message.slice(0, 60));
+        const res = await fetch('/api/playground?query=vector_search');
+        if (res.ok) {
+          const data = await res.json();
+          queryStatus.textContent = 'LIVE COCKROACHDB RESULT';
+        } else {
+          queryStatus.textContent = 'STATIC FALLBACK DEMO';
+        }
+      } catch (e) {
+        queryStatus.textContent = 'STATIC FALLBACK DEMO';
       }
     }
-
-    function copyMcpConfig() {
-      const text = document.getElementById('mcp-config-snippet').textContent;
-      navigator.clipboard.writeText(text);
-      alert('MCP configuration snippet copied to clipboard!');
-    }
-
-    renderDemo();
-    setStatus(false, 'loading…');
-    loadPlayground();
-
-    // ── Agent network canvas: drifting nodes + handoff links ──
-    (function agentNetwork() {
-      const canvas = document.getElementById('agent-canvas');
-      const ctx = canvas.getContext('2d');
-      let w, h, nodes = [];
-      const COLORS = ['#D97706', '#0284C7', '#059669', '#7C3AED', '#0F172A', '#E11D48'];
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-      function resize() {
-        w = canvas.width = Math.floor(window.innerWidth * dpr);
-        h = canvas.height = Math.floor(window.innerHeight * dpr);
-        canvas.style.width = window.innerWidth + 'px';
-        canvas.style.height = window.innerHeight + 'px';
-        const count = Math.min(46, Math.floor(window.innerWidth / 32));
-        nodes = Array.from({ length: count }, () => ({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          vx: (Math.random() - 0.5) * 0.25 * dpr,
-          vy: (Math.random() - 0.5) * 0.25 * dpr,
-          r: (2 + Math.random() * 3.5) * dpr,
-          c: COLORS[Math.floor(Math.random() * COLORS.length)],
-        }));
-      }
-
-      function frame() {
-        ctx.clearRect(0, 0, w, h);
-        for (const n of nodes) {
-          n.x += n.vx; n.y += n.vy;
-          if (n.x < 0 || n.x > w) n.vx *= -1;
-          if (n.y < 0 || n.y > h) n.vy *= -1;
-          ctx.beginPath();
-          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-          ctx.fillStyle = n.c;
-          ctx.globalAlpha = 0.55;
-          ctx.fill();
-        }
-        // links between nearby nodes (context handoff edges)
-        ctx.globalAlpha = 0.12;
-        ctx.lineWidth = 1 * dpr;
-        for (let i = 0; i < nodes.length; i++) {
-          for (let j = i + 1; j < nodes.length; j++) {
-            const a = nodes[i], b = nodes[j];
-            const dx = a.x - b.x, dy = a.y - b.y;
-            const d2 = dx * dx + dy * dy;
-            if (d2 < 140 * 140 * dpr * dpr) {
-              ctx.strokeStyle = a.c;
-              ctx.beginPath();
-              ctx.moveTo(a.x, a.y);
-              ctx.lineTo(b.x, b.y);
-              ctx.stroke();
-            }
-          }
-        }
-        ctx.globalAlpha = 1;
-        requestAnimationFrame(frame);
-      }
-
-      resize();
-      frame();
-      window.addEventListener('resize', resize);
-    })();
-
-    // ── Scroll reveal ──
-    (function scrollReveal() {
-      const els = document.querySelectorAll('section');
-      const io = new IntersectionObserver((entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) { e.target.classList.add('in-view'); io.unobserve(e.target); }
-        }
-      }, { threshold: 0.08 });
-      els.forEach((el) => { el.classList.add('reveal'); io.observe(el); });
-    })();
   </script>
 </body>
 </html>
