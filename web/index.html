@@ -207,21 +207,15 @@
       <div class="flex items-center justify-center gap-6 mb-8 flex-wrap">
         
         <!-- OFFICIAL COCKROACHDB BRAND BADGE -->
+        <!-- OFFICIAL COCKROACHDB LOGO BADGE -->
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
-          <svg class="w-4 h-4 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-            <circle cx="9" cy="10" r="1.5"/>
-            <circle cx="15" cy="10" r="1.5"/>
-            <path d="M12 14c-2 0-3.5 1-3.5 1s1.5 1.5 3.5 1.5 3.5-1.5 3.5-1.5-1.5-1-3.5-1z"/>
-          </svg>
+          <img src="/assets/logos/cockroachdb.svg" alt="CockroachDB" class="w-4 h-4">
           <span>CockroachDB Cloud</span>
         </div>
 
         <!-- OFFICIAL AWS LOGO BADGE -->
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
-          <svg class="w-5 h-3 text-amber-600" viewBox="0 0 50 30" fill="currentColor">
-            <path d="M14.088 10.8903C14.088 11.5142 14.1512 12.0097 14.2775 12.3784C14.4039 12.7487 14.5834 13.1474 14.8162 13.5762C14.8927 13.713 14.9326 13.8381 14.9326 13.9548C14.9326 14.13 14.8262 14.2952 14.6117 14.452L13.5642 15.1526C13.4096 15.2494 13.2633 15.2994 13.1286 15.2994C12.954 15.2994 12.7894 15.2227 12.6348 15.0659C12.402 14.8323 12.2025 14.5738 12.0379 14.2918C11.8733 14.0099 11.7037 13.6846 11.5291 13.3142C10.2289 14.8524 8.59954 15.6214 6.64093 15.6214C5.2443 15.6214 4.13863 15.2227 3.32393 14.4236C2.50922 13.6262 2.10187 12.5552 2.10187 11.2123C2.10187 9.79258 2.60566 8.64817 3.61489 7.78235C4.62246 6.91653 5.98085 6.48279 7.6884 6.48279C8.25038 6.48279 8.8373 6.52616 9.44916 6.61458C10.061 6.703 10.6962 6.82478 11.3546 6.97993V5.75377C11.3546 4.48924 11.0919 3.5984 10.5698 3.08291C10.0461 2.56742 9.14323 2.30885 7.86298 2.30885C7.28105 2.30885 6.68416 2.38225 6.07396 2.52739C5.46377 2.67419 4.86687 2.8627 4.28494 3.09626C4.01393 3.21303 3.8194 3.28644 3.70301 3.3148C3.58663 3.34316 3.50017 3.35817 3.44198 3.35817C3.2092 3.35817 3.09282 3.18301 3.09282 2.83268V2.01524C3.09282 1.74331 3.13106 1.54813 3.2092 1.43135C3.28569 1.31457 3.44198 1.1978 3.67475 1.08102C4.25668 0.789079 4.95499 0.537174 5.7697 0.321971C6.5844 0.108436 7.44732 0 8.35845 0C10.337 0 11.7869 0.452094 12.708 1.35795C13.6291 2.26214 14.0896 3.6301 14.0896 5.46016V10.8903H14.088ZM7.33758 13.431C7.88127 13.431 8.45323 13.3293 9.05511 13.1241C9.65699 12.9205 10.1791 12.5652 10.6263 12.0581C10.8973 11.7478 11.0869 11.3908 11.1933 10.992C11.2997 10.5933 11.3529 10.1112 11.3529 9.54735V8.84669C10.8674 8.72991 10.3586 8.63816 9.82492 8.56976C9.2912 8.50136 8.77246 8.468 8.26867 8.468C7.163 8.468 6.33833 8.69154 5.79464 9.13863C5.25095 9.58739 4.97993 10.2297 4.97993 11.0655C4.97993 11.8445 5.18444 12.4334 5.59013 12.8321C5.99748 13.2308 6.57941 13.431 7.33592 13.431H7.33758Z"/>
-          </svg>
+          <img src="/assets/logos/aws.svg" alt="AWS Bedrock" class="w-4 h-4">
           <span>Amazon Bedrock</span>
         </div>
 
@@ -275,10 +269,8 @@
           <div class="bg-white p-6 rounded-2xl border border-slate-200 light-card-shadow hover:border-emerald-500/50 transition-all cursor-pointer group flex flex-col justify-between h-52" onclick="switchDemoTab('codex')">
             <div class="flex items-center justify-between">
               <!-- Official OpenAI Logo SVG -->
-              <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
-                <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729z"/>
-                </svg>
+              <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center group-hover:scale-105 transition-transform p-2.5">
+                <img src="/assets/logos/openai.svg" alt="OpenAI" class="w-7 h-7 text-emerald-600">
               </div>
               <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200">RECEIVER</span>
             </div>
@@ -291,11 +283,9 @@
           <!-- AGENT 2: GOOGLE ANTIGRAVITY -->
           <div class="bg-white p-6 rounded-2xl border border-slate-200 light-card-shadow hover:border-sky-500/50 transition-all cursor-pointer group flex flex-col justify-between h-52" onclick="switchDemoTab('antigravity')">
             <div class="flex items-center justify-between">
-              <!-- Official Google Gemini Star SVG -->
-              <div class="w-12 h-12 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600 group-hover:scale-105 transition-transform">
-                <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/>
-                </svg>
+              <!-- Official Google Logo SVG -->
+              <div class="w-12 h-12 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center group-hover:scale-105 transition-transform p-2.5">
+                <img src="/assets/logos/google.svg" alt="Google" class="w-7 h-7">
               </div>
               <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-700 px-2 py-0.5 rounded-full bg-sky-50 border border-sky-200">SOURCE</span>
             </div>
@@ -308,11 +298,9 @@
           <!-- AGENT 3: OPENCODE -->
           <div class="bg-white p-6 rounded-2xl border border-slate-200 light-card-shadow hover:border-purple-500/50 transition-all cursor-pointer group flex flex-col justify-between h-52" onclick="switchDemoTab('opencode')">
             <div class="flex items-center justify-between">
-              <!-- Official OpenCode Bracket SVG -->
-              <div class="w-12 h-12 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 group-hover:scale-105 transition-transform">
-                <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M8 6L2 12L8 18M16 6L22 12L16 18M13 4L11 20"/>
-                </svg>
+              <!-- Official OpenCode SVG -->
+              <div class="w-12 h-12 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center group-hover:scale-105 transition-transform p-2.5">
+                <img src="/assets/logos/opencode.svg" alt="OpenCode" class="w-7 h-7">
               </div>
               <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-purple-700 px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200">PLUGIN</span>
             </div>
@@ -325,11 +313,9 @@
           <!-- AGENT 4: LOVABLE -->
           <div class="bg-white p-6 rounded-2xl border border-slate-200 light-card-shadow hover:border-amber-500/50 transition-all cursor-pointer group flex flex-col justify-between h-52" onclick="switchDemoTab('lovable')">
             <div class="flex items-center justify-between">
-              <!-- Official Lovable Heart Mark SVG -->
-              <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 group-hover:scale-105 transition-transform">
-                <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                </svg>
+              <!-- Official Lovable Logo SVG -->
+              <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center group-hover:scale-105 transition-transform p-2.5">
+                <img src="/assets/logos/lovable.svg" alt="Lovable" class="w-7 h-7">
               </div>
               <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200">GITHUB SYNC</span>
             </div>
