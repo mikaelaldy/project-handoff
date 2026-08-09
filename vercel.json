@@ -1,10 +1,4 @@
 {
-  "framework": null,
   "outputDirectory": "web",
-  "functions": {
-    "api/playground.py": {
-      "memory": 1024,
-      "maxDuration": 30
-    }
-  }
+  "cleanUrls": true
 }
