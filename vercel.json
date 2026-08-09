@@ -1,10 +1,12 @@
 {
-  "framework": null,
-  "outputDirectory": "web",
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/web/$1"
     }
   ]
 }
