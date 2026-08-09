@@ -285,4 +285,5 @@ class CockroachHandoffStore:
             created_ms=int(row["created_ms"]),
             updated_ms=int(row["updated_ms"]),
             continues_from=row.get("continues_from"),
+            cosine=row.get("distance"),
         )

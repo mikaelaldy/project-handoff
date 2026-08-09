@@ -81,6 +81,7 @@ class Handoff:
     updated_ms: int
     continues_from: Optional[str] = None
     embedding: Optional[Sequence[float]] = None
+    cosine: Optional[float] = None  # populated by vector-ranked resume()
 
     @property
     def summary_text(self) -> str:

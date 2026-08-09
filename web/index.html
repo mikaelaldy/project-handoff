@@ -11,43 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Plus Jakarta Sans', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            light: {
-              bg: '#FFFFFF',
-              surface: '#F8FAFC',
-              card: '#FFFFFF',
-              border: '#E2E8F0',
-              borderHover: '#CBD5E1',
-              heading: '#0F172A',
-              body: '#475569',
-              muted: '#64748B',
-              amber: '#D97706',
-              amberLight: '#FEF3C7',
-              cyan: '#0284C7',
-              cyanLight: '#E0F2FE',
-              emerald: '#059669',
-              emeraldLight: '#D1FAE5',
-              violet: '#7C3AED',
-              violetLight: '#EDE9FE',
-              rose: '#E11D48',
-            }
-          }
-        }
-      }
-    }
-  </script>
-
+  <!-- Tailwind CSS (compiled locally, no CDN) -->
+  <link rel="stylesheet" href="styles.css">
   <style>
     body {
       background-color: #FFFFFF;
@@ -124,9 +89,65 @@
       background: #0F172A;
       color: #FFFFFF;
     }
+
+    /* ── Animated background ─────────────────────────────── */
+    .bg-mesh {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background:
+        radial-gradient(35rem 25rem at 85% -5%, rgba(2, 132, 199, 0.10) 0%, transparent 60%),
+        radial-gradient(30rem 22rem at 10% 5%, rgba(217, 119, 6, 0.10) 0%, transparent 60%),
+        radial-gradient(40rem 30rem at 50% 110%, rgba(5, 150, 105, 0.07) 0%, transparent 60%),
+        #FFFFFF;
+    }
+    .hero-mesh-glow {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(28rem 20rem at 75% 25%, rgba(217, 119, 6, 0.06) 0%, transparent 65%),
+        radial-gradient(24rem 18rem at 20% 60%, rgba(2, 132, 199, 0.05) 0%, transparent 65%);
+      animation: meshDrift 18s ease-in-out infinite alternate;
+    }
+    @keyframes meshDrift {
+      0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
+      100% { transform: translate3d(2%, 2%, 0) scale(1.05); }
+    }
+
+    /* Agent node canvas */
+    #agent-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.35;
+    }
+
+    /* ── Scroll reveal ───────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .hero-mesh-glow, #agent-canvas { animation: none; }
+    }
   </style>
 </head>
 <body class="bg-white text-slate-900 antialiased selection:bg-amber-200 selection:text-amber-900">
+
+  <!-- ANIMATED BACKGROUND (mesh + drifting glow + agent network canvas) -->
+  <div class="bg-mesh"></div>
+  <div class="hero-mesh-glow"></div>
+  <canvas id="agent-canvas" aria-hidden="true"></canvas>
 
   <!-- LIGHT AURA BACKGROUND -->
   <div class="absolute inset-0 light-aura pointer-events-none z-0"></div>
@@ -360,6 +381,14 @@
           </div>
         </div>
 
+        <!-- LIVE STATUS ROW -->
+        <div class="flex items-center gap-2 pt-6 pb-1">
+          <span id="playground-status" class="inline-flex items-center gap-2 text-xs font-mono font-bold text-slate-500">
+            <span class="w-2 h-2 rounded-full bg-slate-400 animate-pulse"></span>
+            connecting to CockroachDB…
+          </span>
+        </div>
+
         <!-- DUAL CODE PANES -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6">
           
@@ -384,8 +413,7 @@
 <span class="text-sky-400">ORDER BY</span> distance <span class="text-sky-400">ASC</span>
 <span class="text-sky-400">LIMIT</span> 1;
 
-<span class="text-slate-500">// Result: Matched handoff id "c873d59a3ecc4194"</span>
-<span class="text-slate-500">// Similarity score: 0.942 (Cosine Match)</span></pre>
+<span class="text-slate-500">// loading live vector search…</span></pre>
             </div>
           </div>
 
@@ -396,7 +424,7 @@
                 <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
                 <span>2. BOUNDED MARKDOWN RESUME PACKET</span>
               </span>
-              <span class="text-[10px] font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">248 / 1,400 TOKENS</span>
+              <span id="token-badge" class="text-[10px] font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">…</span>
             </div>
 
             <div class="bg-slate-900 rounded-xl p-4 border border-slate-800 font-mono text-xs text-slate-200 overflow-x-auto h-[320px]">
@@ -405,7 +433,6 @@ Implement CockroachDB vector memory & Bedrock Titan V2 integration
 
 <span class="text-amber-400 font-bold">## Current State</span>
 Verified live query execution against CockroachDB cluster.
-Auth config key: <span id="token-secret" class="text-rose-400 font-semibold">[REDACTED]</span>
 
 <span class="text-amber-400 font-bold">## Decisions</span>
 Use CockroachDB VECTOR(512) index with project_id prefix.
@@ -413,14 +440,8 @@ Use CockroachDB VECTOR(512) index with project_id prefix.
 <span class="text-amber-400 font-bold">## Next Action</span>
 Execute Codex agent resume query and finalize submission evidence.
 
-<span class="text-amber-400 font-bold">## Files and Artifacts</span>
-- src/handoff/storage/cockroach.py
-- src/handoff/embeddings.py
-
 <span class="text-amber-400 font-bold">## Provenance</span>
-- source agent: antigravity
-- repository: mikaelaldy/project-handoff @ 8f7b936
-- handoff id: c873d59a3ecc4194</pre>
+- loading live handoff…</pre>
             </div>
           </div>
 
@@ -486,102 +507,120 @@ env = { HANDOFF_EMBEDDING_PROVIDER = <span class="text-emerald-400">"bedrock"</s
 
   <!-- SCRIPT -->
   <script>
-    const demoData = {
+    // ── Live playground: queries the Vercel serverless function, which runs
+    //    the real vector search against CockroachDB via Bedrock embeddings.
+    //    If the API is unreachable, falls back to a labeled static example.
+    const TAB_QUERIES = {
+      antigravity: 'How to query vector memory from CockroachDB',
+      opencode: 'MCP server checkpoint and resume tools',
+      lovable: 'Landing page playground design'
+    };
+
+    // Client-side port of handoff.envelope._SECRET_RE, so the redaction
+    // toggle runs the same rules as the Python library, in the browser.
+    const SECRET_RE = /(sk|pk|ghp|gho|ghs|AKIA|xox[baprs])[A-Za-z0-9_-]{6,}|aws_[a-z]+_[A-Za-z0-9]{16,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|(?:password|token)[=:]\s*\S+/gi;
+    const redactText = (s) => (s || '').replace(SECRET_RE, '[REDACTED]');
+
+    const FALLBACK = {
       antigravity: {
-        query: `-- Executing Vector Search on CockroachDB Cloud
-SELECT id, workstream_id, goal, sections,
-       (embedding <=> $bedrock_titan_vector) AS distance
-FROM handoffs
-WHERE project_id = 'mikaelaldy/project-handoff'
-  AND branch = 'main'
-  AND status IN ('active', 'paused', 'blocked')
-ORDER BY distance ASC
-LIMIT 1;
-
-// Result: Matched handoff id "c873d59a3ecc4194"
-// Similarity score: 0.942 (Cosine Match)`,
-        packet: `## Goal
-Implement CockroachDB vector memory & Bedrock Titan V2 integration
-
-## Current State
-Verified live query execution against CockroachDB cluster.
-Auth config key: SECRET_PLACEHOLDER
-
-## Decisions
-Use CockroachDB VECTOR(512) index with project_id prefix.
-
-## Next Action
-Execute Codex agent resume query and finalize submission evidence.
-
-## Files and Artifacts
-- src/handoff/storage/cockroach.py
-- src/handoff/embeddings.py
-
-## Provenance
-- source agent: antigravity
-- repository: mikaelaldy/project-handoff @ 8f7b936
-- handoff id: c873d59a3ecc4194`
+        query: `-- Executing Vector Search on CockroachDB Cloud\nSELECT id, workstream_id, goal, sections,\n       (embedding <=> $bedrock_titan_vector) AS distance\nFROM handoffs\nWHERE project_id = 'mikaelaldy/project-handoff'\n  AND branch = 'main'\n  AND status IN ('active', 'paused', 'blocked')\nORDER BY distance ASC\nLIMIT 1;\n\n// (example) Matched handoff id "c873d59a3ecc4194"\n// (example) Similarity score: 0.942 (Cosine Match)`,
+        packet: `## Goal\nImplement CockroachDB vector memory & Bedrock Titan V2 integration\n\n## Current State\nVerified live query execution against CockroachDB cluster.\nAuth config key: sk-proj-live-1234567890abcdef\n\n## Decisions\nUse CockroachDB VECTOR(512) index with project_id prefix.\n\n## Next Action\nExecute Codex agent resume query and finalize submission evidence.\n\n## Files and Artifacts\n- src/handoff/storage/cockroach.py\n- src/handoff/embeddings.py\n\n## Provenance\n- source agent: antigravity\n- repository: mikaelaldy/project-handoff @ 8f7b936\n- handoff id: c873d59a3ecc4194`,
+        tokens: 248
       },
       opencode: {
-        query: `-- Querying OpenCode Plugin Handoff
-SELECT id, goal, sections
-FROM handoffs
-WHERE source_agent = 'opencode'
-  AND status = 'active'
-ORDER BY updated_ms DESC LIMIT 1;`,
-        packet: `## Goal
-Refactor OpenCode plugin session events
-
-## Current State
-Plugin events captured via session.idle hook.
-Auth config key: SECRET_PLACEHOLDER
-
-## Next Action
-Resume task in Claude Code.`
+        query: `-- Querying OpenCode Plugin Handoff\nSELECT id, goal, sections\nFROM handoffs\nWHERE source_agent = 'opencode'\n  AND status = 'active'\nORDER BY updated_ms DESC LIMIT 1;\n\n// (example) Matched handoff id "44678355be2e4696"\n// (example) Similarity score: 0.393 (Cosine Match)`,
+        packet: `## Goal\nBuild the MCP server exposing checkpoint and resume tools\n\n## Current State\nPlugin events captured via session.idle hook.\nAuth config key: ghp_example1234567890abcdef\n\n## Next Action\nResume task in Claude Code.\n\n## Provenance\n- source agent: opencode\n- handoff id: 44678355be2e4696`,
+        tokens: 138
       },
       lovable: {
-        query: `-- Ingesting GitHub Push Event from Lovable
-SELECT * FROM handoffs
-WHERE source_agent = 'lovable'
-ORDER BY created_ms DESC;`,
-        packet: `## Goal
-GitHub push sync from Lovable web IDE
-
-## Current State
-Repository state updated on main branch.
-Auth config key: SECRET_PLACEHOLDER
-
-## Files and Artifacts
-- web/index.html`
+        query: `-- Ingesting GitHub Push Event from Lovable\nSELECT * FROM handoffs\nWHERE source_agent = 'lovable'\nORDER BY created_ms DESC;\n\n// (example) Matched handoff id "38decfc632734ae4"\n// (example) Similarity score: 0.312 (Cosine Match)`,
+        packet: `## Goal\nDesign the handoff landing page with live playground\n\n## Current State\nRepository state updated on main branch.\nAuth config key: AKIAEXAMPLE1234567890\n\n## Files and Artifacts\n- web/index.html\n\n## Provenance\n- source agent: lovable\n- handoff id: 38decfc632734ae4`,
+        tokens: 139
       }
     };
 
     let currentTab = 'antigravity';
     let isRedacted = true;
 
+    function setStatus(live, reason) {
+      const el = document.getElementById('playground-status');
+      const dot = el.querySelector('span');
+      if (live) {
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+        el.className = 'inline-flex items-center gap-2 text-xs font-mono font-bold text-emerald-700';
+        el.lastChild.textContent = ' LIVE · CockroachDB × Bedrock';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-amber-500';
+        el.className = 'inline-flex items-center gap-2 text-xs font-mono font-bold text-amber-700';
+        el.lastChild.textContent = ' EXAMPLE · ' + (reason || 'live API unavailable');
+      }
+    }
+
+    function renderPacket(rawPacket, tokens, budget) {
+      const shown = isRedacted ? redactText(rawPacket) : rawPacket;
+      document.getElementById('packet-code').textContent = shown;
+      document.getElementById('token-badge').textContent = tokens + ' / ' + budget + ' TOKENS';
+    }
+
+    function renderDemo() {
+      const el = document.getElementById('query-code');
+      const tokenEl = document.getElementById('token-badge');
+      const fb = FALLBACK[currentTab] || FALLBACK.antigravity;
+      el.textContent = fb.query;
+      renderPacket(fb.packet, fb.tokens, 1400);
+    }
+
     function switchDemoTab(tab) {
       currentTab = tab;
       document.querySelectorAll('.tab-pill').forEach(btn => btn.classList.remove('active'));
-      
       const activeBtn = document.getElementById('tab-' + tab);
       if (activeBtn) activeBtn.classList.add('active');
-
       renderDemo();
+      setStatus(false, 'loading…');
+      loadPlayground();
     }
 
     function toggleRedaction() {
       isRedacted = document.getElementById('redact-toggle').checked;
-      renderDemo();
+      if (lastLive) {
+        renderPacket(lastLive.packet, lastLive.packet_tokens, lastLive.budget);
+      } else {
+        const fb = FALLBACK[currentTab] || FALLBACK.antigravity;
+        renderPacket(fb.packet, fb.tokens, 1400);
+      }
     }
 
-    function renderDemo() {
-      const data = demoData[currentTab] || demoData.antigravity;
-      document.getElementById('query-code').textContent = data.query;
-      
-      const secretElem = document.getElementById('token-secret');
-      if (secretElem) {
-        secretElem.textContent = isRedacted ? '[REDACTED]' : 'sk-proj-99218381273821938';
-        secretElem.className = isRedacted ? 'text-rose-400 font-semibold' : 'text-amber-400 font-mono';
+    let lastLive = null;
+
+    async function loadPlayground() {
+      const q = encodeURIComponent(TAB_QUERIES[currentTab] || TAB_QUERIES.antigravity);
+      const agent = encodeURIComponent(currentTab);
+      const url = '/api/playground?q=' + q + '&agent=' + agent;
+      try {
+        const res = await fetch(url, { headers: { Accept: 'application/json' } });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (data.mode !== 'live') throw new Error(data.reason || 'no live data');
+        lastLive = data;
+        document.getElementById('query-code').textContent =
+          '-- Executing Vector Search on CockroachDB Cloud\n' +
+          'SELECT id, workstream_id, goal, sections,\n' +
+          '       (embedding <=> $bedrock_titan_vector) AS distance\n' +
+          'FROM handoffs\n' +
+          'WHERE project_id = \'mikaelaldy/project-handoff\'\n' +
+          '  AND branch = \'main\'\n' +
+          '  AND status IN (\'active\', \'paused\', \'blocked\')\n' +
+          'ORDER BY distance ASC\n' +
+          'LIMIT 1;\n\n' +
+          '// Result: Matched handoff id "' + data.handoff_id + '"\n' +
+          '// Similarity score: ' + data.cosine + ' (Cosine Match)\n' +
+          '// Embeddings: ' + data.embedding_provider + ' · ' + data.agent + ' flow';
+        renderPacket(data.packet, data.packet_tokens, data.budget);
+        setStatus(true);
+      } catch (err) {
+        lastLive = null;
+        renderDemo();
+        setStatus(false, err.message.slice(0, 60));
       }
     }
 
@@ -590,6 +629,83 @@ Auth config key: SECRET_PLACEHOLDER
       navigator.clipboard.writeText(text);
       alert('MCP configuration snippet copied to clipboard!');
     }
+
+    renderDemo();
+    setStatus(false, 'loading…');
+    loadPlayground();
+
+    // ── Agent network canvas: drifting nodes + handoff links ──
+    (function agentNetwork() {
+      const canvas = document.getElementById('agent-canvas');
+      const ctx = canvas.getContext('2d');
+      let w, h, nodes = [];
+      const COLORS = ['#D97706', '#0284C7', '#059669', '#7C3AED', '#0F172A', '#E11D48'];
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      function resize() {
+        w = canvas.width = Math.floor(window.innerWidth * dpr);
+        h = canvas.height = Math.floor(window.innerHeight * dpr);
+        canvas.style.width = window.innerWidth + 'px';
+        canvas.style.height = window.innerHeight + 'px';
+        const count = Math.min(46, Math.floor(window.innerWidth / 32));
+        nodes = Array.from({ length: count }, () => ({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.25 * dpr,
+          vy: (Math.random() - 0.5) * 0.25 * dpr,
+          r: (2 + Math.random() * 3.5) * dpr,
+          c: COLORS[Math.floor(Math.random() * COLORS.length)],
+        }));
+      }
+
+      function frame() {
+        ctx.clearRect(0, 0, w, h);
+        for (const n of nodes) {
+          n.x += n.vx; n.y += n.vy;
+          if (n.x < 0 || n.x > w) n.vx *= -1;
+          if (n.y < 0 || n.y > h) n.vy *= -1;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          ctx.fillStyle = n.c;
+          ctx.globalAlpha = 0.55;
+          ctx.fill();
+        }
+        // links between nearby nodes (context handoff edges)
+        ctx.globalAlpha = 0.12;
+        ctx.lineWidth = 1 * dpr;
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const a = nodes[i], b = nodes[j];
+            const dx = a.x - b.x, dy = a.y - b.y;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < 140 * 140 * dpr * dpr) {
+              ctx.strokeStyle = a.c;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+        }
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(frame);
+      }
+
+      resize();
+      frame();
+      window.addEventListener('resize', resize);
+    })();
+
+    // ── Scroll reveal ──
+    (function scrollReveal() {
+      const els = document.querySelectorAll('section');
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) { e.target.classList.add('in-view'); io.unobserve(e.target); }
+        }
+      }, { threshold: 0.08 });
+      els.forEach((el) => { el.classList.add('reveal'); io.observe(el); });
+    })();
   </script>
 </body>
 </html>
