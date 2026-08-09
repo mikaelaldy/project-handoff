@@ -1,4 +1,5 @@
 {
-  "outputDirectory": "public",
+  "buildCommand": "echo 'Static assets ready'",
+  "outputDirectory": "web",
   "cleanUrls": true
 }
