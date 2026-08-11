@@ -1,4 +1,17 @@
 {
-  "framework": null,
-  "outputDirectory": "web"
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/(.*)", "destination": "/web/$1" }
+  ],
+  "functions": {
+    "api/playground.py": {
+      "includeFiles": "src/**"
+    },
+    "api/evidence.py": {
+      "includeFiles": "src/**"
+    },
+    "api/auth.py": {
+      "includeFiles": "src/**"
+    }
+  }
 }
