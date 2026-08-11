@@ -18,7 +18,6 @@ Primary workflow demo:
 ### 1. Live Web Surfaces
 - **Production Web & Interactive Vector Playground:** [https://project-handoff.vercel.app](https://project-handoff.vercel.app)
 - **Judge Proof-of-Work Dashboard:** [https://project-handoff.vercel.app/dashboard](https://project-handoff.vercel.app/dashboard)
-  - **Judge Password:** `mikaelaldy123`
   - *Provides live proof of CockroachDB vector indexing, Bedrock embeddings latency, test suite pass rates, and architectural flow.*
 
 ### 2. Quickest Local Verification (Zero Credentials Required — 30 Seconds)
