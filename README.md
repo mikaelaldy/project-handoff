@@ -9,7 +9,71 @@
 **Project Handoff** is a vendor-neutral, open-source continuity layer for AI-assisted development. It captures the progress, decisions, blockers, and next actions of an unfinished coding task, embeds and indexes them in **CockroachDB Cloud** via **Amazon Bedrock**, and makes that context available to another AI agent through **MCP (Model Context Protocol)**.
 
 Primary workflow demo:
-> **Antigravity** (or Claude Code) stops → Handoff captures state & embeds via Bedrock → Saved in CockroachDB Vector Memory → **Codex** (or OpenCode) resumes seamlessly.
+> **Antigravity** (or Lovable / Claude Code) stops → Handoff captures state & embeds via Bedrock → Saved in CockroachDB Vector Memory → **Codex** (or OpenCode) resumes seamlessly.
+
+---
+
+## 🏆 Judge Verification Guide (CockroachDB x AWS Hackathon)
+
+### 1. Live Web Surfaces
+- **Production Web & Interactive Vector Playground:** [https://project-handoff.vercel.app](https://project-handoff.vercel.app)
+- **Judge Proof-of-Work Dashboard:** [https://project-handoff.vercel.app/dashboard](https://project-handoff.vercel.app/dashboard)
+  - **Judge Password:** `mikaelaldy123`
+  - *Provides live proof of CockroachDB vector indexing, Bedrock embeddings latency, test suite pass rates, and architectural flow.*
+
+### 2. Quickest Local Verification (Zero Credentials Required — 30 Seconds)
+Judges can verify the core pipeline, secret redaction, and token budgeting locally without needing CockroachDB or AWS credentials:
+
+```bash
+git clone https://github.com/mikaelaldy/project-handoff.git
+cd project-handoff
+pip install -e '.[test]'
+
+# Runs full test suite using offline SQLite fallback
+pytest tests/ -v
+```
+
+### 3. Replicating the Handoff Demo (Agent A → Agent B)
+To see Agent A's memory transferred to Agent B locally:
+
+```bash
+# 1. Agent A (e.g. Lovable) hits a rate limit or stops, saving a checkpoint
+python3 -c "
+from handoff.actions import do_checkpoint
+from handoff.storage import store_from_env
+
+store = store_from_env()
+store.open()
+do_checkpoint({
+    'project_id': 'demo-app',
+    'repository': 'mika/demo-app',
+    'branch': 'main',
+    'source_agent': 'lovable',
+    'status': 'blocked',
+    'goal': 'Implement Stripe checkout webhook',
+    'sections': {
+        'current_state': 'Checkout UI done. Webhook signature verification half-written.',
+        'blockers': 'Rate limit hit at message 40',
+        'next_action': 'Finish signature verification in api/webhook.py',
+        'decisions': 'Use Stripe SDK v12 with PostgreSQL event log'
+    },
+    'files': ['src/checkout.tsx', 'api/webhook.py']
+}, store=store)
+store.close()
+"
+
+# 2. Agent B (e.g. OpenCode or Codex) resumes the same project
+python3 -c "
+from handoff.actions import do_resume
+from handoff.storage import store_from_env
+
+store = store_from_env()
+store.open()
+results = do_resume({'project_id': 'demo-app', 'query_text': 'stripe webhook'}, store=store)
+print(results[0].resume_payload())
+store.close()
+"
+```
 
 ---
 
@@ -54,19 +118,17 @@ Primary workflow demo:
 
 ---
 
-## ⚡ Quickstart
+## ⚡ Full Setup & Live Cloud Deployment
 
 ### 1. Prerequisites
 
 - Python 3.11+
 - CockroachDB Cloud database URL (`postgresql://...`)
-- AWS CLI configured with active Bedrock permissions
+- AWS CLI configured with active Bedrock permissions (`us-east-1`)
 
 ### 2. Installation
 
 ```bash
-git clone https://github.com/mikaelaldy/project-handoff.git
-cd project-handoff
 pip install -e '.[cockroach,aws,mcp,cli,test]'
 ```
 
@@ -77,17 +139,9 @@ pip install -e '.[cockroach,aws,mcp,cli,test]'
 curl --create-dirs -o $HOME/.postgresql/root.crt 'https://cockroachlabs.cloud/clusters/<your-cluster-id>/cert'
 
 # Export environment variables
-export HANDOFF_DATABASE_URL="postgresql://<user>:<password>@<host>:26257/defaultdb?sslmode=verify-full"
+export HANDOFF_DATABASE_URL="postgresql://<user>:***@<host>:26257/defaultdb?sslmode=verify-full"
 export HANDOFF_EMBEDDING_PROVIDER="bedrock"
 export AWS_REGION="us-east-1"
-```
-
-### 4. Running the Local Test Suite
-
-Verify both local fallback and live cloud integrations:
-
-```bash
-pytest tests/ -v
 ```
 
 ---
@@ -96,7 +150,7 @@ pytest tests/ -v
 
 ### Using via MCP Server
 
-Add to your MCP-compatible client config (e.g. Codex or Claude Code):
+Add to your MCP-compatible client config (e.g. Codex, Claude Code, OpenCode):
 
 ```json
 {
